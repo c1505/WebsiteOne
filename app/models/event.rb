@@ -41,6 +41,12 @@ class Event < ActiveRecord::Base
     end
     pending
   end
+  
+  def self.list_upcoming_events_chronologically_with_repeats(base_events)
+    base_events.inject([]) do |memo, event|
+      memo << event.next_occurrences
+    end.flatten.sort_by { |e| e[:time] }
+  end
 
   def event_date
     start_datetime

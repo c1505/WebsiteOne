@@ -15,6 +15,7 @@ class EventsController < ApplicationController
   end
 
   def index
+    session[:timezone_offset] = "events"
     @projects = Project.all
     list_all_upcoming_events_with_repeats_by(specified_project)
   end
@@ -25,6 +26,7 @@ class EventsController < ApplicationController
   end
 
   def create
+    binding.pry
     EventCreatorService.new(Event).perform(transform_params,
                                            success: ->(event) do
                                              @event = event
@@ -105,8 +107,13 @@ class EventsController < ApplicationController
     @project = Project.friendly.find(params[:project_id]) unless params[:project_id].blank?
   end
 
+  # def list_all_upcoming_events_with_repeats_by(project = nil)
+  #   base_events = project.nil? ? Event.all : Event.where(project_id: project)
+  #   @events = list_upcoming_events_chronologically_with_repeats(base_events)
+  # end
+  
   def list_all_upcoming_events_with_repeats_by(project = nil)
-    base_events = project.nil? ? Event.all : Event.where(project_id: project)
+    base_events = project.nil? ? Event.all : Event.where(category: "Scrum")
     @events = list_upcoming_events_chronologically_with_repeats(base_events)
   end
 

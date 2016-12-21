@@ -1,4 +1,21 @@
 <%= javascript_include_tag 'scrums' %>
+before<%= @timezone_offset %>after
+
+<h1>Upcoming Scrums</h1>
+
+<% @keys.each do |key| %>
+  <h2><%= key %></h2><br>
+  <% @upcoming_scrums[key].each do |event| %>
+    <%= event[:event].name %>
+              <i class="fa fa-calendar"></i><span class="month"><%= local_time(event[:time],'%a, %b %d, %Y') %></span><br/>
+              <i class="fa fa-clock-o"></i><span><%= raw show_local_time_range(event[:time], event[:event].duration) %></span>
+              Using new time below
+              <i class="fa fa-calendar"></i><span class="month"><%= event[:time] + session[:timezone_offset] %></span><br/>
+  <% end %>
+<% end %>
+
+
+            
 <div class="row">
   <div class="col-xs-12 col-sm-10">
     <h1>Previous scrums</h1>

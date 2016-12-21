@@ -14,4 +14,15 @@ var Scrum = {
   }
 
 }
-$(document).on('ready page:load', Scrum.setup)
+var offset = new Date().getTimezoneOffset();
+
+$(document).on('ready page:load', (function() {
+  Scrum.setup;
+  console.log(offset);
+  var offset_string = JSON.stringify(offset);
+  $.ajax({
+    type: "POST",
+    url: "/timezone",
+    data: { timezone_offset: offset_string }
+  })
+}))
