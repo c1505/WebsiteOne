@@ -1,11 +1,5 @@
-<div class='container-fluid'>
+
   <div class='row'>
-    <div class="col-xs-1 col-sm-1 hg-toggle">
-      <%= fa_icon "caret-right" %>
-    </div>
-    <div class="col-xs-4 col-sm-1"> <%= hangout.created_at %> </div>
-    <div class="col-xs-12 col-sm-4"> <%= hangout.title %> </div>
-    <div class="col-xs-12 col-sm-4"><%= hangout.project_link %></div>
     <div class="col-xs-4 col-sm-1 hg-avatar">
       <%= render 'users/user_avatar', user: hangout.host %>
     </div>
@@ -16,4 +10,4 @@
       </div>
     </div>
   </div>
-</div>
+

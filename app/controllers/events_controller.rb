@@ -17,6 +17,10 @@ class EventsController < ApplicationController
   def index
     @projects = Project.all
     list_all_upcoming_events_with_repeats_by(specified_project)
+    @events.delete_if {|f| !f[:event].event_instances.first.try(:live?) && (f[:time] + f[:event].duration.minutes) < Time.current}
+    # this needs to be tested
+    
+    # @events.delete_if {|f| (f[:time] + f[:event].duration) < Time.current }
   end
 
   def edit

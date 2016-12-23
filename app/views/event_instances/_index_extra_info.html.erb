@@ -1,15 +1,9 @@
-<div class='container-fluid'>
+
   <div class='row'>
-    <div class='hidden-xs col-sm-1 hg-toggle'></div>
-    <div class='hidden-xs col-sm-1 hg-align-right'>
-      <div class='row'><b>Event</b></div>
-      <div class='row'><b>Category</b></div>
-      <div class='row'>Duration</div>
-    </div>
-    <div class='col-xs-12 col-sm-4'>
-      <div class='row'>&nbsp;&nbsp;<%= hangout.event_link %> </div>
-      <div class='row'>&nbsp;&nbsp;<%= hangout.category %> </div>
-      <div class='row'>&nbsp;&nbsp;<%= hangout.duration %> </div>
+    <%= link_to 'Watch', hangout.hangout_url, class: 'btn btn-default' %>
+    <div class='hidden-xs col-sm-2'><b>Host</b></div>
+    <div class="col-xs-4 col-sm-1 hg-avatar">
+      <%= render 'users/user_avatar', user: hangout.host %>
     </div>
     <div class='hidden-xs col-sm-2'><b>Participants</b></div>
     <div class='col-xs-12 col-sm-4 hg-avatar'>
@@ -18,4 +12,4 @@
       <% end %>
     </div>
   </div>
-</div>
+

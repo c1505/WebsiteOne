@@ -5,12 +5,21 @@ class EventInstancesController < ApplicationController
   def update
     event_instance = EventInstance.find_or_create_by(uid: params[:id])
 
+
     event_instance_params = check_and_transform_params(event_instance)
     hangout_url_changed = event_instance.hangout_url != event_instance_params[:hangout_url]
     yt_video_id_changed = event_instance.yt_video_id != event_instance_params[:yt_video_id]
     slack_notify = params[:notify] == 'true'
 
     if event_instance.try!(:update, event_instance_params)
+      #create event here or with an after validation in the model.
+      unless event_instance.event
+        event = Event.new(start_datetime: Time.current, name: event_instance.title, time_zone: Time.zone, repeats: false, duration: 60,
+                          category: event_instance.category, description: event_instance.project_id)
+        event_instance.event = event
+        event_instance.save
+      end
+      # event = Event.create(start_datetime: Time.now, name: "live event", time_zone: Time.zone, repeats: false, duration: 180, category: "pair programming", description: "live")
       SlackService.post_hangout_notification(event_instance) if (slack_notify && event_instance.hangout_url?) || (event_instance.started? && hangout_url_changed)
       SlackService.post_yt_link(event_instance) if (slack_notify && event_instance.yt_video_id?) || yt_video_id_changed
 

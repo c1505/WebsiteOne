@@ -9,9 +9,10 @@ class EventInstance < ActiveRecord::Base
   belongs_to :project
 
   serialize :participants
-
+  
+  
   scope :started, -> { where.not(hangout_url: nil) }
-  scope :live, -> { where('updated_at > ?', 5.minutes.ago).order('created_at DESC') }
+  scope :live, -> { where('updated_at > ?', 60.minutes.ago).order('created_at DESC') } #don't commit this change
   scope :latest, -> { order('created_at DESC') }
   scope :pp_hangouts, -> { where(category: 'PairProgramming') }
 
@@ -19,13 +20,23 @@ class EventInstance < ActiveRecord::Base
   accepts_nested_attributes_for :hangout_participants_snapshots
 
   validate :dont_update_after_finished, on: :update
+  
+  after_create do
+    unless self.event
+        event = Event.new(start_datetime: Time.current, name: self.title, time_zone: Time.zone, repeats: false, duration: 60,
+                          category: self.category, description: self.project_id, project_id: self.project_id)
+        event.save
+        self.event = event
+        self.save
+      end
+  end
 
   def started?
     hangout_url?
   end
 
   def updated_within_last_two_minutes?
-    updated_at > 2.minutes.ago
+    updated_at > 60.minutes.ago #don't commit this change.  
   end
 
   def live?

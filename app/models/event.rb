@@ -18,7 +18,7 @@ class Event < ActiveRecord::Base
   attr_accessor :repeat_ends_string
 
   COLLECTION_TIME_FUTURE = 10.days
-  COLLECTION_TIME_PAST = 15.minutes
+  COLLECTION_TIME_PAST = 360.minutes
 
   REPEATS_OPTIONS = %w[never weekly]
   REPEAT_ENDS_OPTIONS = %w[on never]
@@ -227,6 +227,7 @@ class Event < ActiveRecord::Base
   end
 
   def repeating_and_ends?
+    #this should probably scope to repeating rather than iterating over
     repeats != 'never' && repeat_ends && !repeat_ends_on.blank?
   end
 end
