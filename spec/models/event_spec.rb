@@ -368,11 +368,6 @@ describe Event, :type => :model do
       options = {start_time: '2015-06-20 09:27:00 UTC'}
       expect(@event.start_datetime_for_collection(options)).to eq(options[:start_time])
     end
-
-    it 'should return 15 minutes before now if start_time is not specified' do
-      Delorean.time_travel_to(Time.parse('2015-06-23 09:27:00 UTC'))
-      expect(@event.start_datetime_for_collection.to_datetime.to_s).to eq((15.minutes.ago).utc.to_datetime.to_s)
-    end
   end
 
   describe 'Event#final_datetime_for_collection for repeating event with ends_on' do
@@ -468,6 +463,41 @@ describe Event, :type => :model do
 
     it 'returns only the hangouts updated between yesterday and today' do
       expect(event.recent_hangouts.to_a).to match_array([@recent_hangout])
+    end
+  end
+
+  describe '#upcoming_events' do
+    before(:each) do
+      @event1 = FactoryGirl.create(Event,
+                                 category: 'Scrum',
+                                 name: 'Spec Scrum one-time',
+                                 start_datetime: '2015-06-15 09:20:00 UTC',
+                                 duration: 30,
+                                 repeats: 'never'
+      )
+      @event2 = FactoryGirl.create(Event,
+                                 category: 'Scrum',
+                                 name: 'Spec Scrum one-time',
+                                 start_datetime: '2015-06-15 09:25:00 UTC',
+                                 duration: 30,
+                                 repeats: 'never'
+      )
+    end
+
+    it 'shows future events' do
+      Delorean.time_travel_to(Time.parse('2015-06-15 09:25:00 UTC'))
+      expect(Event.upcoming_events.count).to eq(2)
+    end
+
+    it 'does not show finished events' do
+      Delorean.time_travel_to(Time.parse('2015-06-15 09:51:00 UTC'))
+      expect(Event.upcoming_events.count).to eq(1)
+    end
+
+    it 'returns events that have a live EventInstance' do
+      event_instance = FactoryGirl.create(EventInstance)
+      expect(event_instance.event).to eq(Event.upcoming_events.last[:event])
+      expect(Event.upcoming_events.count).to eq(1)
     end
   end
 end
