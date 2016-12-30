@@ -137,3 +137,6 @@ end
 klasses.each_with_index do |klass, i|
   puts "#{klass.name}.count " + old_counts[i].to_s.bold.red + ' -> ' + klass.count.to_s.bold.green
 end
+
+event = Event.create(start_datetime: Time.now, name: "live", time_zone: Time.current.zone,
+                     repeats: false, duration: 10, category: "pair programming", description: "live")
