@@ -33,3 +33,8 @@ Feature: Live Events
     Then the event should be live
     And after three minutes
     Then the event should be dead
+
+  Scenario: Live event is created from HangoutConnection if one does not exit
+    Given the HangoutConnection has pinged to indicate the event start
+    And there is no Event associated with the HangoutConnection
+    Then the event should be live
