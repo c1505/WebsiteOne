@@ -20,11 +20,7 @@ describe EventInstance, type: :model do
     event_instance = EventInstance.create(event_id: event.id)
     expect(event_instance.event.id).to be(event.id)
     expect(event_count).to eq(Event.all.count)
-    # try and think of a way this could still fail
-    #  in the controller
-    #  an event instance is created
-    # that event instance is then associated with an event
-      #  test this with a controller or feature test
+
   end
 
 
