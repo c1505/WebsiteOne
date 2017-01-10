@@ -137,3 +137,13 @@ end
 klasses.each_with_index do |klass, i|
   puts "#{klass.name}.count " + old_counts[i].to_s.bold.red + ' -> ' + klass.count.to_s.bold.green
 end
+
+
+event_instance = EventInstance.create(hangout_url: "bob", title: "live", category: "Pair Programming", project_id: 1,
+                                      participants: {"0"=>{"person"=>{:displayName=>"Broadcaster1", "id"=>"youtube_id_1", :isBroadcaster=>"true"}},
+                                      "1"=>{"person"=>{:displayName=>"Participant_1", "id"=>"youtube_id_1", :isBroadcaster=>"false"}}})
+event = Event.create(start_datetime: Time.now, name: "new -20 10", time_zone: Time.current.zone,
+                     repeats: false, duration: 60, category: "pair programming", description: "live")
+
+event.event_instances << event_instance
+event.save

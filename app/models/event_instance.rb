@@ -11,7 +11,7 @@ class EventInstance < ActiveRecord::Base
   serialize :participants
 
   scope :started, -> { where.not(hangout_url: nil) }
-  scope :live, -> { where('updated_at > ?', 5.minutes.ago).order('created_at DESC') }
+  scope :live, -> { where('updated_at > ?', 50.minutes.ago).order('created_at DESC') }
   scope :latest, -> { order('created_at DESC') }
   scope :pp_hangouts, -> { where(category: 'PairProgramming') }
 
@@ -29,7 +29,8 @@ class EventInstance < ActiveRecord::Base
   end
 
   def live?
-    started? && hoa_status != 'finished' && (updated_within_last_two_minutes? || manually_updated_event_not_finished?)
+    # started? && hoa_status != 'finished' && (updated_within_last_two_minutes? || manually_updated_event_not_finished?)
+    started?
   end
 
   def duration

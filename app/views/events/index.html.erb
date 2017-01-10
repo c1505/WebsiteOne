@@ -28,6 +28,17 @@
               <div class="col-lg-9 col-xs-12 col-sm-9">
                 <div class="event-title"><%= link_to event.name.truncate(50, separator: /\s/), event_path(event) %></div>
               </div>
+              <% present current_user do |presenter| %>
+                  <a id= 'gravatar-index' href="<%= user_path(current_user) %>">
+                    <%= presenter.gravatar_image(size: 40,
+                                                 class: 'img-circle'
+                                                 ) %>
+                  </a>
+                  <a href="<%= user_path(current_user) %>">
+                    <%= presenter.gravatar_image(size: 40,
+                                                 class: 'img-circle') %>
+                  </a>
+                <% end %>
               <div class="col-lg-3 col-xs-12 col-sm-3">
                 <% if instance[:time].today?%>
                   <% recent_hangout = event.recent_hangouts.first %>
@@ -50,4 +61,3 @@
       <% end %>
   <% end %>
 </div>
-
