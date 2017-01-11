@@ -30,11 +30,23 @@
                 <div class="event-title"><%= link_to event.name.truncate(50, separator: /\s/), event_path(event) %></div>
               </div>
               <div >
+                <% present current_user do |presenter| %>
+                <a id= 'gravatar-index' href="<%= user_path(current_user) %>">
+                  <%= presenter.gravatar_image(size: 40,
+                                               class: 'img-circle'
+                                               ) %>
+                </a>
+                <a href="<%= user_path(current_user) %>">
+                  <%= presenter.gravatar_image(size: 40,
+                                               class: 'img-circle') %>
+                </a>
+                <% end %>
                 <% if instance[:time].today?%>
                   <% recent_hangout = event.recent_hangouts.first %>
                   <% if recent_hangout && recent_hangout.live? %>
                       <div class="event-notice pull-right">
                         <%= link_to 'Event live! Join now', recent_hangout.hangout_url, class: 'btn btn-default' %>
+                        
                       
                         <%= link_to 'Watch', recent_hangout.hangout_url, class: 'btn btn-default' %>
                       </div>

@@ -139,12 +139,13 @@ klasses.each_with_index do |klass, i|
 end
 
 #Hangout recordings.  Would be nice to be able to create one that is live
-event_instance = FactoryGirl.create(:event_instance, updated: '10:00 UTC', hangout_url: "bob") 
+# event_instance = FactoryGirl.create(:event_instance, updated: '10:00 UTC', hangout_url: "bob")
+
 event_instance = EventInstance.create(hangout_url: "bob", title: "live", category: "Pair Programming", project_id: 1,
                                       participants: {"0"=>{"person"=>{:displayName=>"Broadcaster1", "id"=>"youtube_id_1", :isBroadcaster=>"true"}},
                                       "1"=>{"person"=>{:displayName=>"Participant_1", "id"=>"youtube_id_1", :isBroadcaster=>"false"}}})
-event = Event.create(start_datetime: Time.now - 20.minutes, name: "new -20 10", time_zone: Time.current.zone,
-                     repeats: false, duration: 10, category: "pair programming", description: "live")
-# event_instance.hangout_url = "cat" #update to keep event_instance live
-event_instance.event = event
+event = Event.create(start_datetime: Time.now, name: "new -20 10", time_zone: Time.current.zone,
+                     repeats: false, duration: 60, category: "pair programming", description: "live")
+
+event.event_instances << event_instance
 event.save
