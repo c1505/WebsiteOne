@@ -16,7 +16,7 @@ class EventsController < ApplicationController
 
   def index
     @projects = Project.all
-    @events = Event.upcoming_events(specified_project)
+    list_all_upcoming_events_with_repeats_by(specified_project)
   end
 
   def edit
@@ -104,7 +104,18 @@ class EventsController < ApplicationController
   def specified_project
     @project = Project.friendly.find(params[:project_id]) unless params[:project_id].blank?
   end
+  
+  def list_all_upcoming_events_with_repeats_by(project = nil)
+    base_events = project.nil? ? Event.all : Event.where(project_id: project)
+    @events = list_upcoming_events_chronologically_with_repeats(base_events)
+  end
 
+  def list_upcoming_events_chronologically_with_repeats(base_events)
+    base_events.inject([]) do |memo, event|
+      memo << event.next_occurrences
+    end.flatten.sort_by { |e| e[:time] }
+  end
+  
   def set_event
     @event = Event.friendly.find(params[:id])
   end
