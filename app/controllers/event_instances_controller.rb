@@ -5,9 +5,19 @@ class EventInstancesController < ApplicationController
   def update
     unless EventInstance.find_by(uid: params[:id])
       EventInstance.create(uid: params[:id], event_id: params[:event_id])
+      EventInstance.create_related_event
     end
-    event_instance = EventInstance.find_by(uid: params[:id])
-    # another option could be to just call a different method on the instance.
+    event_instance = EventInstance.find_by(uid: params[:id]) 
+    
+      # def create_related_event
+  #   unless self.event
+  #     event = Event.new(start_datetime: Time.current, name: self.title, time_zone: Time.zone, repeats: false, duration: 60,
+  #                       category: self.category, description: self.project_id, project_id: self.project_id)
+  #     event.save
+  #     self.event = event
+  #     self.save
+  #   end
+  # end
 
     event_instance_params = check_and_transform_params(event_instance)
     hangout_url_changed = event_instance.hangout_url != event_instance_params[:hangout_url]

@@ -1,5 +1,5 @@
 class EventInstance < ActiveRecord::Base
-  after_create :create_related_event
+  # after_create :create_related_event
   self.per_page = 30
 
   belongs_to :event
