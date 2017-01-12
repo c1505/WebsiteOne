@@ -11,9 +11,9 @@ As a site user
       | name       | description             | category        | start_datetime          | duration | repeats | time_zone |
       | Standup    | Daily standup meeting   | Scrum           | 2014/02/03 07:00:00 UTC | 150      | never   | UTC       |
       | PP Session | Pair programming on WSO | PairProgramming | 2014/02/07 10:00:00 UTC | 15       | never   | UTC       |
-      | 20 Min     | Started 15 minutes ago  | PairProgramming | 2014/02/01 09:00:00 UTC | 20       | never   | UTC       |
-      | 10 Min     | Started 15 minutes ago  | PairProgramming | 2014/02/01 09:00:00 UTC | 10       | never   | UTC       |
-      | Still Live | Started 15 minutes ago  | PairProgramming | 2014/02/01 09:00:00 UTC | 1        | never   | UTC       |
+      | 25 Min     | Started 20 minutes ago  | PairProgramming | 2014/02/01 08:55:00 UTC | 25       | never   | UTC       |
+      | 6 Min      | Started 10 minutes ago  | PairProgramming | 2014/02/01 09:05:00 UTC | 6        | never   | UTC       |
+      | Still Live | Started 20 minutes ago  | PairProgramming | 2014/02/01 08:55:00 UTC | 1        | never   | UTC       |
 
     Given the date is "2014/02/01 09:15:00 UTC"
 
@@ -25,11 +25,11 @@ As a site user
 
   Scenario: Shows started event within scheduled event duration
     Given I am on Events index page
-    And I should see "20 Min"
+    And I should see "25 Min"
 
   Scenario: Doesn't show event past scheduled event duration
     Given I am on Events index page
-    And I should not see "10 Min"
+    And I should not see "6 Min"
 
   Scenario: Shows event past end time when still live
     Given an event "Still Live"
