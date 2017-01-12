@@ -29,6 +29,7 @@ class Event < ActiveRecord::Base
   # then from there I reach out to recurrence, and get the repeated times
   # a big part of me wants to start with the changes i already made.
   
+  
 
   def set_repeat_ends_string
     @repeat_ends_string = repeat_ends ? "on" : "never"
@@ -38,11 +39,21 @@ class Event < ActiveRecord::Base
     project.nil? ? Event.all : Event.where(project_id: project)
   end
 
+  # def self.upcoming_events(project=nil)
+  #   events = Event.base_events(project).inject([]) do |memo, event|
+  #     memo << event.next_occurrences
+  #   end.flatten.sort_by { |e| e[:time] }
+  # end
+  
   def self.upcoming_events(project=nil)
-    events = Event.base_events(project).inject([]) do |memo, event|
-      memo << event.next_occurrences
-    end.flatten.sort_by { |e| e[:time] }
+    events = Event.base_events(project)
+    # Recurrence.new(events)
+    Recurrence.upcoming_events(events)
+    # events = Event.base_events(project).inject([]) do |memo, event|
+    #   memo << event.next_occurrences
+    # end.flatten.sort_by { |e| e[:time] }
   end
+
 
   def self.hookups
     Event.where(category: "PairProgramming")
@@ -155,7 +166,7 @@ class Event < ActiveRecord::Base
     end
   end
 
-  def occurrences_between(start_time, end_time)
+  def occurrences_between(start_time, end_time) #is this not calling itself?
     schedule.occurrences_between(start_time.to_time, end_time.to_time)
   end
 
@@ -181,7 +192,7 @@ class Event < ActiveRecord::Base
     save!
   end
 
-  def schedule()
+  def schedule() #why does this have parens and no parameter that it is taking?  
     sched = series_end_time.nil? || !repeat_ends ? IceCube::Schedule.new(start_datetime) : IceCube::Schedule.new(start_datetime, :end_time => series_end_time)
     case repeats
       when 'never'
