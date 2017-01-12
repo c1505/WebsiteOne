@@ -23,9 +23,25 @@ class Event < ActiveRecord::Base
   REPEATS_OPTIONS = %w[never weekly]
   REPEAT_ENDS_OPTIONS = %w[on never]
   DAYS_OF_THE_WEEK = %w[monday tuesday wednesday thursday friday saturday sunday]
+  
+  
+  # how do i start?  I want to deal with base and persisted events here
+  # then from there I reach out to recurrence, and get the repeated times
+  # a big part of me wants to start with the changes i already made.
+  
 
   def set_repeat_ends_string
     @repeat_ends_string = repeat_ends ? "on" : "never"
+  end
+  
+  def self.base_events(project)
+    project.nil? ? Event.all : Event.where(project_id: project)
+  end
+
+  def self.upcoming_events(project=nil)
+    events = Event.base_events(project).inject([]) do |memo, event|
+      memo << event.next_occurrences
+    end.flatten.sort_by { |e| e[:time] }
   end
 
   def self.hookups

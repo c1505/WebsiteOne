@@ -1,0 +1,2 @@
+class Recurrence
+end
