@@ -39,13 +39,13 @@ class Event < ActiveRecord::Base
     project.nil? ? Event.all : Event.where(project_id: project)
   end
 
-  # def self.upcoming_events(project=nil)
-  #   events = Event.base_events(project).inject([]) do |memo, event|
-  #     memo << event.next_occurrences
-  #   end.flatten.sort_by { |e| e[:time] }
-  # end
-  
   def self.upcoming_events(project=nil)
+    Event.base_events(project).inject([]) do |memo, event|
+      memo << event.next_occurrences
+    end.flatten.sort_by { |e| e[:time] }
+  end
+  
+  def self.reccurences(project=nil)
     events = Event.base_events(project)
     # Recurrence.new(events)
     Recurrence.upcoming_events(events)
@@ -135,7 +135,7 @@ class Event < ActiveRecord::Base
   # But some event instances may have been excluded, so there's not guarantee that the next time for an event will be within the next week, or even the next month
   # To cover these cases, the while loop looks farther and farther into the future for the next event occurrence, just in case there are many exclusions.
   def next_event_occurrence_with_time(start = Time.now, final= 2.months.from_now)
-    begin_datetime = start_datetime_for_collection(start_time: start)
+    # begin_datetime = start_datetime_for_collection(start_time: start) #unused local varialbe
     final_datetime = repeating_and_ends? ? repeat_ends_on : final
     n_days = 8
     end_datetime = n_days.days.from_now
@@ -254,6 +254,7 @@ class Event < ActiveRecord::Base
   end
 
   def repeating_and_ends?
+    binding.pry
     repeats != 'never' && repeat_ends && !repeat_ends_on.blank?
   end
 end

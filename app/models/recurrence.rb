@@ -1,3 +1,5 @@
+# better to initialize with an array events or just one event to one recurrence?
+# i'm not even sure at this point if I want this as a class or just a module
 class Recurrence
   # def initialize(events)
   #   @events = events
@@ -43,24 +45,42 @@ class Recurrence
     end
     final_datetime ? final_datetime.to_datetime.utc : COLLECTION_TIME_FUTURE.from_now
   end
-  
-  
-  
-  
-  # def schedule() #why does this have parens and no parameter that it is taking?  
-  #   sched = series_end_time.nil? || !repeat_ends ? IceCube::Schedule.new(start_datetime) : IceCube::Schedule.new(start_datetime, :end_time => series_end_time)
-  #   case repeats
-  #     when 'never'
-  #       sched.add_recurrence_time(start_datetime)
-  #     when 'weekly'
-  #       days = repeats_weekly_each_days_of_the_week.map { |d| d.to_sym }
-  #       sched.add_recurrence_rule IceCube::Rule.weekly(repeats_every_n_weeks).day(*days)
-  #   end
-  #   self.exclusions ||= []
-  #   self.exclusions.each do |ex|
-  #     sched.add_exception_time(ex)
-  #   end
-  #   sched
-  # end
+
+  def occurrences_between(start_time, end_time) #calls the icecube method inside
+    schedule.occurrences_between(start_time.to_time, end_time.to_time)
+  end
+
+  def repeating_and_ends?
+    repeats != 'never' && repeat_ends && !repeat_ends_on.blank?
+  end
+
+  def schedule() #why does this have parens and no parameter that it is taking?
+    sched = series_end_time.nil? || !repeat_ends ? IceCube::Schedule.new(start_datetime) : IceCube::Schedule.new(start_datetime, :end_time => series_end_time)
+    case repeats
+      when 'never'
+        sched.add_recurrence_time(start_datetime)
+      when 'weekly'
+        days = repeats_weekly_each_days_of_the_week.map { |d| d.to_sym }
+        sched.add_recurrence_rule IceCube::Rule.weekly(repeats_every_n_weeks).day(*days)
+    end
+    self.exclusions ||= []
+    self.exclusions.each do |ex|
+      sched.add_exception_time(ex)
+    end
+    sched
+  end
+
+  def series_end_time
+    repeat_ends && repeat_ends_on.present? ? repeat_ends_on.to_time : nil
+  end
+
+  def repeats_weekly_each_days_of_the_week
+    DAYS_OF_THE_WEEK.reject do |r|
+      ((repeats_weekly_each_days_of_the_week_mask || 0) & 2**DAYS_OF_THE_WEEK.index(r)).zero?
+    end
+  end
+
+  DAYS_OF_THE_WEEK = %w[monday tuesday wednesday thursday friday saturday sunday]
+
   
 end
