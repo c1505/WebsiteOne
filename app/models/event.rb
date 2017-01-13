@@ -29,6 +29,9 @@ class Event < ActiveRecord::Base
   # then from there I reach out to recurrence, and get the repeated times
   # a big part of me wants to start with the changes i already made.
   
+  # if i create recurrence objects, then I will get those back in the end.  
+  # each one contains an event.  at that point, i really just want the event
+  #  really what i would want in the end is a 
   
 
   def set_repeat_ends_string
@@ -48,10 +51,11 @@ class Event < ActiveRecord::Base
   def self.reccurences(project=nil)
     events = Event.base_events(project)
     # Recurrence.new(events)
-    Recurrence.upcoming_events(events)
-    # events = Event.base_events(project).inject([]) do |memo, event|
-    #   memo << event.next_occurrences
-    # end.flatten.sort_by { |e| e[:time] }
+    # Recurrence.upcoming_events(events)
+
+    events = Event.base_events(project).inject([]) do |memo, event|
+      memo << Recurrence.new(event).next_occurrences
+    end.flatten.sort_by { |e| e[:time] }
   end
 
 
@@ -201,8 +205,8 @@ class Event < ActiveRecord::Base
         days = repeats_weekly_each_days_of_the_week.map { |d| d.to_sym }
         sched.add_recurrence_rule IceCube::Rule.weekly(repeats_every_n_weeks).day(*days)
     end
-    self.exclusions ||= []
-    self.exclusions.each do |ex|
+    exclusions ||= []
+    exclusions.each do |ex|
       sched.add_exception_time(ex)
     end
     sched
@@ -254,7 +258,6 @@ class Event < ActiveRecord::Base
   end
 
   def repeating_and_ends?
-    binding.pry
     repeats != 'never' && repeat_ends && !repeat_ends_on.blank?
   end
 end

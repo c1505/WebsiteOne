@@ -1,9 +1,11 @@
 # better to initialize with an array events or just one event to one recurrence?
 # i'm not even sure at this point if I want this as a class or just a module
+
 class Recurrence
-  # def initialize(events)
-  #   @events = events
-  # end
+  attr_accessor :event
+  def initialize(event)
+    @event = event
+  end
   
   include IceCube
   
@@ -11,11 +13,11 @@ class Recurrence
   COLLECTION_TIME_PAST = 15.minutes
   
   #this returns a hash with the base event and the time of the upcoming event
-  def self.upcoming_events(events)
-    events.inject([]) do |memo, event|
-      memo << event.next_occurrences
-    end.flatten.sort_by { |e| e[:time] }
-  end
+  # def self.upcoming_events(events)
+  #   events.inject([]) do |memo, event|
+  #     memo << event.next_occurrences
+  #   end.flatten.sort_by { |e| e[:time] }
+  # end
   
   def next_occurrences(options = {})
     begin_datetime = start_datetime_for_collection(options)
@@ -23,7 +25,7 @@ class Recurrence
     limit = options.fetch(:limit, 100)
     [].tap do |occurences|
       occurrences_between(begin_datetime, final_datetime).each do |time|
-        occurences << { event: self, time: time }
+        occurences << { event: event, time: time }
         return occurences if occurences.count >= limit
       end
     end
@@ -31,7 +33,7 @@ class Recurrence
   
   def start_datetime_for_collection(options = {})
     first_datetime = options.fetch(:start_time, COLLECTION_TIME_PAST.ago)
-    first_datetime = [start_datetime, first_datetime.to_datetime].max
+    first_datetime = [event.start_datetime, first_datetime.to_datetime].max
     first_datetime.to_datetime.utc
   end
   
@@ -51,32 +53,32 @@ class Recurrence
   end
 
   def repeating_and_ends?
-    repeats != 'never' && repeat_ends && !repeat_ends_on.blank?
+    event.repeats != 'never' && event.repeat_ends && !event.repeat_ends_on.blank?
   end
 
   def schedule() #why does this have parens and no parameter that it is taking?
-    sched = series_end_time.nil? || !repeat_ends ? IceCube::Schedule.new(start_datetime) : IceCube::Schedule.new(start_datetime, :end_time => series_end_time)
-    case repeats
+    sched = series_end_time.nil? || !repeat_ends ? IceCube::Schedule.new(event.start_datetime) : IceCube::Schedule.new(event.start_datetime, :end_time => series_end_time)
+    case event.repeats
       when 'never'
-        sched.add_recurrence_time(start_datetime)
+        sched.add_recurrence_time(event.start_datetime)
       when 'weekly'
         days = repeats_weekly_each_days_of_the_week.map { |d| d.to_sym }
-        sched.add_recurrence_rule IceCube::Rule.weekly(repeats_every_n_weeks).day(*days)
+        sched.add_recurrence_rule IceCube::Rule.weekly(event.repeats_every_n_weeks).day(*days)
     end
-    self.exclusions ||= []
-    self.exclusions.each do |ex|
+    event.exclusions ||= []
+    event.exclusions.each do |ex|
       sched.add_exception_time(ex)
     end
     sched
   end
 
   def series_end_time
-    repeat_ends && repeat_ends_on.present? ? repeat_ends_on.to_time : nil
+    event.repeat_ends && event.repeat_ends_on.present? ? event.repeat_ends_on.to_time : nil
   end
 
   def repeats_weekly_each_days_of_the_week
     DAYS_OF_THE_WEEK.reject do |r|
-      ((repeats_weekly_each_days_of_the_week_mask || 0) & 2**DAYS_OF_THE_WEEK.index(r)).zero?
+      ((event.repeats_weekly_each_days_of_the_week_mask || 0) & 2**DAYS_OF_THE_WEEK.index(r)).zero?
     end
   end
 

@@ -470,4 +470,65 @@ describe Event, :type => :model do
       expect(event.recent_hangouts.to_a).to match_array([@recent_hangout])
     end
   end
+  
+  describe 'returns repeating events' do
+    before(:each) do
+      @event3 = FactoryGirl.create(Event,
+                                        name: 'one time event',
+                                        category: 'Scrum',
+                                        description: '',
+                                        start_datetime: 'Mon, 17 Jun 2013 09:00:00 UTC',
+                                        duration: 600,
+                                        repeats: 'never',
+                                        repeats_every_n_weeks: nil,
+                                        repeat_ends_string: 'on',
+                                        repeat_ends: false,
+                                        repeat_ends_on: 'Mon, 17 Jun 2013',
+                                        time_zone: 'Eastern Time (US & Canada)')
+
+      @event4 = FactoryGirl.create(Event,
+                                        name: 'every weekend event',
+                                        category: 'Scrum',
+                                        description: '',
+                                        start_datetime: 'Mon, 17 Jun 2013 09:00:00 UTC',
+                                        duration: 600,
+                                        repeats: 'weekly',
+                                        repeats_every_n_weeks: 1,
+                                        repeats_weekly_each_days_of_the_week_mask: 96,
+                                        repeat_ends: false,
+                                        repeat_ends_on: 'Tue, 25 Jun 2013',
+                                        time_zone: 'Eastern Time (US & Canada)')
+
+      @event5 = FactoryGirl.create(Event,
+                                        name: 'every Sunday event',
+                                        category: 'Scrum',
+                                        description: '',
+                                        start_datetime: 'Mon, 17 Jun 2013 09:00:00 UTC',
+                                        duration: 600,
+                                        repeats: 'weekly',
+                                        repeats_every_n_weeks: 1,
+                                        repeats_weekly_each_days_of_the_week_mask: 64,
+                                        repeat_ends: false,
+                                        repeat_ends_on: 'Mon, 17 Jun 2013',
+                                        time_zone: 'Eastern Time (US & Canada)')
+
+      @event6 = FactoryGirl.build_stubbed(Event,
+                                        name: 'every Monday event',
+                                        category: 'Scrum',
+                                        description: '',
+                                        start_datetime: 'Mon, 17 Jun 2013 09:00:00 UTC',
+                                        duration: 600,
+                                        repeats: 'weekly',
+                                        repeats_every_n_weeks: 1,
+                                        repeats_weekly_each_days_of_the_week_mask: 1,
+                                        repeat_ends: false,
+                                        repeat_ends_on: 'Mon, 17 Jun 2013',
+                                        time_zone: 'UTC')
+    end
+    
+    it 'shows repeating events' do 
+      expect(Event.upcoming_events).to eq(Event.reccurences)
+    end
+  end
+    
 end
