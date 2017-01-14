@@ -16,7 +16,8 @@ class EventsController < ApplicationController
 
   def index
     @projects = Project.all
-    @events = Event.upcoming_events(specified_project)
+    # @events = Event.upcoming_events(specified_project)
+    @events = Event.reccurences(specified_project)
   end
 
   def edit

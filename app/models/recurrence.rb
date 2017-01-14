@@ -12,12 +12,7 @@ class Recurrence
   COLLECTION_TIME_FUTURE = 10.days
   COLLECTION_TIME_PAST = 15.minutes
   
-  #this returns a hash with the base event and the time of the upcoming event
-  # def self.upcoming_events(events)
-  #   events.inject([]) do |memo, event|
-  #     memo << event.next_occurrences
-  #   end.flatten.sort_by { |e| e[:time] }
-  # end
+  DAYS_OF_THE_WEEK = %w[monday tuesday wednesday thursday friday saturday sunday]
   
   def next_occurrences(options = {})
     begin_datetime = start_datetime_for_collection(options)
@@ -59,7 +54,7 @@ class Recurrence
   def schedule() #why does this have parens and no parameter that it is taking?
     sched = series_end_time.nil? || !repeat_ends ? IceCube::Schedule.new(event.start_datetime) : IceCube::Schedule.new(event.start_datetime, :end_time => series_end_time)
     case event.repeats
-      when 'never'
+      when 'never' # this has been changed to boolean in the database
         sched.add_recurrence_time(event.start_datetime)
       when 'weekly'
         days = repeats_weekly_each_days_of_the_week.map { |d| d.to_sym }
@@ -82,7 +77,7 @@ class Recurrence
     end
   end
 
-  DAYS_OF_THE_WEEK = %w[monday tuesday wednesday thursday friday saturday sunday]
+
 
   
 end

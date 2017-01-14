@@ -49,15 +49,12 @@ class Event < ActiveRecord::Base
   end
   
   def self.reccurences(project=nil)
-    events = Event.base_events(project)
-    # Recurrence.new(events)
-    # Recurrence.upcoming_events(events)
-
-    events = Event.base_events(project).inject([]) do |memo, event|
-      memo << Recurrence.new(event).next_occurrences
+    Event.base_events(project).inject([]) do |memo, event|
+      memo << Recurrence.new(event).next_occurrences #maybe refactor further.  odd to get back different class
     end.flatten.sort_by { |e| e[:time] }
   end
-
+  
+  
 
   def self.hookups
     Event.where(category: "PairProgramming")
@@ -123,7 +120,7 @@ class Event < ActiveRecord::Base
     next_occurrence.present? ? next_occurrence[:time] : nil
   end
 
-  def self.next_occurrence(event_type, begin_time = COLLECTION_TIME_PAST.ago)
+  def self.next_occurrence(event_type, begin_time = COLLECTION_TIME_PAST.ago) #move this too
     events_with_times = []
     events_with_times = Event.where(category: event_type).map { |event|
       event.next_event_occurrence_with_time(begin_time)
@@ -138,8 +135,8 @@ class Event < ActiveRecord::Base
   # Most of the time, the next instance will be within the next weeek.do
   # But some event instances may have been excluded, so there's not guarantee that the next time for an event will be within the next week, or even the next month
   # To cover these cases, the while loop looks farther and farther into the future for the next event occurrence, just in case there are many exclusions.
-  def next_event_occurrence_with_time(start = Time.now, final= 2.months.from_now)
-    # begin_datetime = start_datetime_for_collection(start_time: start) #unused local varialbe
+  def next_event_occurrence_with_time(start = Time.now, final= 2.months.from_now) #why both this and the previous method?  
+    begin_datetime = start_datetime_for_collection(start_time: start) #unused local varialbe
     final_datetime = repeating_and_ends? ? repeat_ends_on : final
     n_days = 8
     end_datetime = n_days.days.from_now
@@ -184,8 +181,7 @@ class Event < ActiveRecord::Base
     end
   end
 
-  def remove_from_schedule(timedate)
-    # best if schedule is serialized into the events record...  and an attribute.
+  def remove_from_schedule(timedate) #looks like this is only used in a test and not in running code.  do we want it?  
     if timedate >= Time.now && timedate == next_occurrence_time_method
       _next_occurrences = next_occurrences(limit: 2)
       self.start_datetime = (_next_occurrences.size > 1) ? _next_occurrences[1][:time] : timedate + 1.day
