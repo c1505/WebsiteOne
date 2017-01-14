@@ -36,7 +36,7 @@ class Recurrence
     if repeating_and_ends? && options[:end_time].present?
       final_datetime = [options[:end_time], repeat_ends_on.to_datetime].min
     elsif repeating_and_ends?
-      final_datetime = repeat_ends_on.to_datetime
+      final_datetime = event.repeat_ends_on.to_datetime
     else
       final_datetime = options[:end_time]
     end
