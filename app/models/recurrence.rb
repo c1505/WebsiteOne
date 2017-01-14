@@ -1,6 +1,3 @@
-# better to initialize with an array events or just one event to one recurrence?
-# i'm not even sure at this point if I want this as a class or just a module
-
 class Recurrence
   attr_accessor :event
   def initialize(event)
@@ -34,7 +31,7 @@ class Recurrence
   
   def final_datetime_for_collection(options = {})
     if repeating_and_ends? && options[:end_time].present?
-      final_datetime = [options[:end_time], repeat_ends_on.to_datetime].min
+      final_datetime = [options[:end_time], event.repeat_ends_on.to_datetime].min
     elsif repeating_and_ends?
       final_datetime = event.repeat_ends_on.to_datetime
     else
@@ -47,12 +44,13 @@ class Recurrence
     schedule.occurrences_between(start_time.to_time, end_time.to_time)
   end
 
-  def repeating_and_ends?
+  def repeating_and_ends? #maybe move back event.  also figure out if 'never' is doing what
+  # it should be doing.  tests use never, but database is now setup as boolean
     event.repeats != 'never' && event.repeat_ends && !event.repeat_ends_on.blank?
   end
 
-  def schedule() #why does this have parens and no parameter that it is taking?
-    sched = series_end_time.nil? || !repeat_ends ? IceCube::Schedule.new(event.start_datetime) : IceCube::Schedule.new(event.start_datetime, :end_time => series_end_time)
+  def schedule #why does this have parens and no parameter that it is taking?
+    sched = series_end_time.nil? || !event.repeat_ends ? IceCube::Schedule.new(event.start_datetime) : IceCube::Schedule.new(event.start_datetime, :end_time => series_end_time)
     case event.repeats
       when 'never' # this has been changed to boolean in the database
         sched.add_recurrence_time(event.start_datetime)
@@ -76,7 +74,8 @@ class Recurrence
       ((event.repeats_weekly_each_days_of_the_week_mask || 0) & 2**DAYS_OF_THE_WEEK.index(r)).zero?
     end
   end
-
+  
+  #below here unrelated to fetching list of recurring events
 
 
   

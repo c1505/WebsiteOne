@@ -167,8 +167,8 @@ class Event < ActiveRecord::Base
     end
   end
 
-  def occurrences_between(start_time, end_time) #is this not calling itself?
-    schedule.occurrences_between(start_time.to_time, end_time.to_time)
+  def occurrences_between(start_time, end_time)
+    schedule.occurrences_between(start_time.to_time, end_time.to_time) #this is a method in icecube
   end
 
   def repeats_weekly_each_days_of_the_week=(repeats_weekly_each_days_of_the_week)
@@ -192,7 +192,7 @@ class Event < ActiveRecord::Base
     save!
   end
 
-  def schedule() #why does this have parens and no parameter that it is taking?  
+  def schedule #why does this have parens and no parameter that it is taking?  
     sched = series_end_time.nil? || !repeat_ends ? IceCube::Schedule.new(start_datetime) : IceCube::Schedule.new(start_datetime, :end_time => series_end_time)
     case repeats
       when 'never'
