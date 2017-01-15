@@ -24,16 +24,6 @@ class Event < ActiveRecord::Base
   REPEAT_ENDS_OPTIONS = %w[on never]
   DAYS_OF_THE_WEEK = %w[monday tuesday wednesday thursday friday saturday sunday]
   
-  
-  # how do i start?  I want to deal with base and persisted events here
-  # then from there I reach out to recurrence, and get the repeated times
-  # a big part of me wants to start with the changes i already made.
-  
-  # if i create recurrence objects, then I will get those back in the end.  
-  # each one contains an event.  at that point, i really just want the event
-  #  really what i would want in the end is a 
-  
-
   def set_repeat_ends_string
     @repeat_ends_string = repeat_ends ? "on" : "never"
   end
@@ -54,8 +44,6 @@ class Event < ActiveRecord::Base
     end.flatten.sort_by { |e| e[:time] }
   end
   
-  
-
   def self.hookups
     Event.where(category: "PairProgramming")
   end
@@ -83,7 +71,7 @@ class Event < ActiveRecord::Base
   end
 
   def instance_end_time
-    (start_datetime + duration*60).utc
+    (start_datetime + duration * 60).utc
   end
 
   def end_date
@@ -110,6 +98,7 @@ class Event < ActiveRecord::Base
   end
 
   def start_datetime_for_collection(options = {})
+    binding.pry
     first_datetime = options.fetch(:start_time, COLLECTION_TIME_PAST.ago)
     first_datetime = [start_datetime, first_datetime.to_datetime].max
     first_datetime.to_datetime.utc

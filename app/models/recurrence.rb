@@ -12,18 +12,18 @@ class Recurrence
   DAYS_OF_THE_WEEK = %w[monday tuesday wednesday thursday friday saturday sunday]
   
   def next_occurrences(options = {})
-    begin_datetime = start_datetime_for_collection(options)
-    final_datetime = final_datetime_for_collection(options)
+    # begin_datetime = start_datetime_for_collection(options)
+    # final_datetime = final_datetime_for_collection(options)
     limit = options.fetch(:limit, 100)
     [].tap do |occurences|
-      occurrences_between(begin_datetime, final_datetime).each do |time|
+      occurrences_between(start_datetime_for_collection, final_datetime_for_collection).each do |time|
         occurences << { event: event, time: time }
         return occurences if occurences.count >= limit
       end
     end
   end
   
-  def start_datetime_for_collection(options = {})
+  def start_datetime_for_collection(options = {}) #is this :start_time just for testing purposes?
     first_datetime = options.fetch(:start_time, COLLECTION_TIME_PAST.ago)
     first_datetime = [event.start_datetime, first_datetime.to_datetime].max
     first_datetime.to_datetime.utc
@@ -52,11 +52,11 @@ class Recurrence
   def schedule #why does this have parens and no parameter that it is taking?
     sched = series_end_time.nil? || !event.repeat_ends ? IceCube::Schedule.new(event.start_datetime) : IceCube::Schedule.new(event.start_datetime, :end_time => series_end_time)
     case event.repeats
-      when 'never' # this has been changed to boolean in the database
-        sched.add_recurrence_time(event.start_datetime)
-      when 'weekly'
-        days = repeats_weekly_each_days_of_the_week.map { |d| d.to_sym }
-        sched.add_recurrence_rule IceCube::Rule.weekly(event.repeats_every_n_weeks).day(*days)
+    when 'never' # this has been changed to boolean in the database
+      sched.add_recurrence_time(event.start_datetime)
+    when 'weekly'
+      days = repeats_weekly_each_days_of_the_week.map { |d| d.to_sym }
+      sched.add_recurrence_rule IceCube::Rule.weekly(event.repeats_every_n_weeks).day(*days)
     end
     event.exclusions ||= []
     event.exclusions.each do |ex|
@@ -77,6 +77,74 @@ class Recurrence
   
   #below here unrelated to fetching list of recurring events
 
+  def next_occurrence_time_method(start = Time.now)
+    next_occurrence = next_event_occurrence_with_time(start)
+    next_occurrence.present? ? next_occurrence[:time] : nil
+  end
 
+  def self.next_occurrence(event_type, begin_time = COLLECTION_TIME_PAST.ago) #move this too
+    events_with_times = []
+    events_with_times = Event.where(category: event_type).map { |event|
+      event.next_event_occurrence_with_time(begin_time)
+    }.compact
+    return nil if events_with_times.empty?
+    events_with_times = events_with_times.sort_by { |e| e[:time] }
+    events_with_times[0][:event].next_occurrence_time_attr = events_with_times[0][:time]
+    return events_with_times[0][:event]
+  end
+  
+  def next_event_occurrence_with_time(start = Time.now, final= 2.months.from_now) #why both this and the previous method?  
+    begin_datetime = start_datetime_for_collection(start_time: start) #unused local varialbe
+    final_datetime = repeating_and_ends? ? repeat_ends_on : final
+    n_days = 8
+    end_datetime = n_days.days.from_now
+    event = nil
+    return next_event_occurrence_with_time_inner(start, final_datetime) if self.repeats == 'never'
+    while event.nil? && end_datetime < final_datetime
+      event = next_event_occurrence_with_time_inner(start, final_datetime)
+      n_days *= 2
+      end_datetime = n_days.days.from_now
+    end
+    event
+  end
+
+  def next_event_occurrence_with_time_inner(start_time, end_time)
+    occurrences = occurrences_between(start_time, end_time)
+    { event: self, time: occurrences.first.start_time } if occurrences.present?
+  end
+  
+  def remove_from_schedule(timedate) #looks like this is only used in a test and not in running code.  do we want it?  
+    if timedate >= Time.now && timedate == next_occurrence_time_method
+      _next_occurrences = next_occurrences(limit: 2)
+      self.start_datetime = (_next_occurrences.size > 1) ? _next_occurrences[1][:time] : timedate + 1.day
+    elsif timedate >= Time.now
+      self.exclusions ||= []
+      self.exclusions << timedate
+    end
+    save!
+  end
+  
+  def less_than_ten_till_start?
+    return true if within_current_event_duration?
+    Time.now > next_event_occurrence_with_time[:time] - 10.minutes
+  rescue
+    false
+  end
+  
+  def within_current_event_duration? #doesn't seem to be used
+    after_current_start_time? and before_current_end_time?
+  end
+  
+  def before_current_end_time? #doesn't seem to be used
+    Time.now < (schedule.previous_occurrence(Time.now) + duration*60)
+  rescue
+    false
+  end
+
+  def after_current_start_time? #doesn't seem to be used
+    Time.now > schedule.previous_occurrence(Time.now)
+  rescue
+    false
+  end
   
 end
