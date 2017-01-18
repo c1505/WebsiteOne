@@ -107,6 +107,7 @@ group :development, :test do
   gem 'rspec-rails'
   gem 'coveralls', require: false
   gem 'simplecov'
+  gem 'rack-mini-profiler', require: false
 end
 
 group :development, :staging, :production do
