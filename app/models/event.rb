@@ -98,7 +98,6 @@ class Event < ActiveRecord::Base
   end
 
   def start_datetime_for_collection(options = {})
-    binding.pry
     first_datetime = options.fetch(:start_time, COLLECTION_TIME_PAST.ago)
     first_datetime = [start_datetime, first_datetime.to_datetime].max
     first_datetime.to_datetime.utc

@@ -1,7 +1,9 @@
 class Recurrence
-  attr_accessor :event
+  attr_reader :event, :start_time, :end_time, :collection_end, :collection_start #probably should just be a reader
   def initialize(event)
     @event = event
+    @collection_start = Time.current - COLLECTION_TIME_PAST #this shoul also include the time not just the day i think.  
+    @collection_end = Time.current + COLLECTION_TIME_FUTURE
   end
   
   include IceCube
@@ -11,17 +13,53 @@ class Recurrence
   
   DAYS_OF_THE_WEEK = %w[monday tuesday wednesday thursday friday saturday sunday]
   
+  ##### New Code ######
   def next_occurrences(options = {})
-    # begin_datetime = start_datetime_for_collection(options)
-    # final_datetime = final_datetime_for_collection(options)
-    limit = options.fetch(:limit, 100)
-    [].tap do |occurences|
-      occurrences_between(start_datetime_for_collection, final_datetime_for_collection).each do |time|
-        occurences << { event: event, time: time }
-        return occurences if occurences.count >= limit
-      end
+    schedule = IceCube::Schedule.new()
+    schedule.add_recurrence_rule(
+    IceCube::Rule.weekly.day(recurring_days) )
+    occurrences = schedule.occurrences(end_time)
+    binding.pry
+  end
+  
+  private
+  
+  def end_time
+    if event.repeat_ends_on < collection_end
+      event.repeat_ends_on
+    else
+      collection_end
     end
   end
+  
+  def recurring_days
+    DAYS_OF_THE_WEEK.reject do |r|
+      ((event.repeats_weekly_each_days_of_the_week_mask || 0) & 2**DAYS_OF_THE_WEEK.index(r)).zero?
+    end.to_sym
+  end
+  
+    
+  
+  # start_time = Time.current - COLLECTION_TIME_PAST
+  # end_time = Time.current + COLLECTION_TIME_FUTURE
+  
+
+  
+  
+  
+  ##### New Code #####
+  
+  # def next_occurrences(options = {})
+  #   # begin_datetime = start_datetime_for_collection(options)
+  #   # final_datetime = final_datetime_for_collection(options)
+  #   limit = options.fetch(:limit, 100)
+  #   [].tap do |occurences|
+  #     occurrences_between(start_datetime_for_collection, final_datetime_for_collection).each do |time|
+  #       occurences << { event: event, time: time }
+  #       return occurences if occurences.count >= limit
+  #     end
+  #   end
+  # end
   
   def start_datetime_for_collection(options = {}) #is this :start_time just for testing purposes?
     first_datetime = options.fetch(:start_time, COLLECTION_TIME_PAST.ago)
@@ -69,10 +107,10 @@ class Recurrence
     event.repeat_ends && event.repeat_ends_on.present? ? event.repeat_ends_on.to_time : nil
   end
 
-  def repeats_weekly_each_days_of_the_week
+  def recurring_days
     DAYS_OF_THE_WEEK.reject do |r|
       ((event.repeats_weekly_each_days_of_the_week_mask || 0) & 2**DAYS_OF_THE_WEEK.index(r)).zero?
-    end
+    end.to_sym
   end
   
   #below here unrelated to fetching list of recurring events

@@ -1,0 +1,12 @@
+=> [[32m#<IceCube::WeeklyRule:0x0000000d255ed8[0m
+  @interval[32m=[0m[1;34m1[0m,
+  @uses[32m=[0m[1;34m0[0m,
+  @validations[32m=[0m
+   {[33m:interval[0m=>[[32m#<IceCube::Validations::WeeklyInterval::Validation:0x0000000d255e10[0m @interval[32m=[0m[1;34m1[0m, @week_start[32m=[0m[33m:sunday[0m[32m>[0m],
+    [33m:base_hour[0m=>[[32m#<IceCube::Validations::ScheduleLock::Validation:0x0000000d255b90[0m @type[32m=[0m[33m:hour[0m[32m>[0m],
+    [33m:base_min[0m=>[[32m#<IceCube::Validations::ScheduleLock::Validation:0x0000000d255af0[0m @type[32m=[0m[33m:min[0m[32m>[0m],
+    [33m:base_sec[0m=>[[32m#<IceCube::Validations::ScheduleLock::Validation:0x0000000d255a50[0m @type[32m=[0m[33m:sec[0m[32m>[0m],
+    [33m:day[0m=>
+     [[32m#<IceCube::Validations::Day::Validation:0x0000000d255960[0m @day[32m=[0m[1;34m1[0m[32m>[0m,
+      [32m#<IceCube::Validations::Day::Validation:0x0000000d255938[0m @day[32m=[0m[1;34m2[0m[32m>[0m]},
+  @week_start[32m=[0m[33m:sunday[0m[32m>[0m]
