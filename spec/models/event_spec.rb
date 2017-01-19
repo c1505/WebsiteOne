@@ -483,7 +483,7 @@ describe Event, :type => :model do
                                         repeats_every_n_weeks: nil,
                                         repeat_ends_string: 'on',
                                         repeat_ends: false,
-                                        repeat_ends_on: 'Mon, 17 Jun 2013',
+                                        repeat_ends_on: 'Mon, 17 Jun 2018',
                                         time_zone: 'Eastern Time (US & Canada)')
 
       @event4 = FactoryGirl.create(Event,
@@ -496,7 +496,7 @@ describe Event, :type => :model do
                                         repeats_every_n_weeks: 1,
                                         repeats_weekly_each_days_of_the_week_mask: 96,
                                         repeat_ends: false,
-                                        repeat_ends_on: 'Tue, 25 Jun 2013',
+                                        repeat_ends_on: 'Tue, 25 Jun 2018',
                                         time_zone: 'Eastern Time (US & Canada)')
 
       @event5 = FactoryGirl.create(Event,
@@ -509,7 +509,7 @@ describe Event, :type => :model do
                                         repeats_every_n_weeks: 1,
                                         repeats_weekly_each_days_of_the_week_mask: 64,
                                         repeat_ends: false,
-                                        repeat_ends_on: 'Mon, 17 Jun 2013',
+                                        repeat_ends_on: 'Mon, 17 Jun 2018',
                                         time_zone: 'Eastern Time (US & Canada)')
 
       @event6 = FactoryGirl.build_stubbed(Event,
@@ -522,7 +522,7 @@ describe Event, :type => :model do
                                         repeats_every_n_weeks: 1,
                                         repeats_weekly_each_days_of_the_week_mask: 1,
                                         repeat_ends: false,
-                                        repeat_ends_on: 'Mon, 17 Jun 2013',
+                                        repeat_ends_on: 'Mon, 17 Jun 2018',
                                         time_zone: 'UTC')
     end
     

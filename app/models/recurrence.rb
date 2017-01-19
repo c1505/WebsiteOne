@@ -15,18 +15,30 @@ class Recurrence
   
   ##### New Code ######
   def next_occurrences(options = {})
-    schedule = IceCube::Schedule.new()
-    schedule.add_recurrence_rule(
-    IceCube::Rule.weekly.day(recurring_days) )
+    schedule = IceCube::Schedule.new(collection_start_including_event_time)
+    
+    schedule.add_recurrence_rule( IceCube::Rule.weekly.day(recurring_days) )
     occurrences = schedule.occurrences(end_time)
-    binding.pry
+    arr = [] #implement with tap
+    occurrences.each do |occurrence|
+      arr << { event: event, time: occurrence }
+    end
+    arr
+    # binding.pry #not sure if the previous method took into account reccurence ending
+    # only recurring events should make it here
+    # repeats is currently 'weekly' and 'never'.  it should be true and false.  
   end
   
   private
   
+  def collection_start_including_event_time
+    collection_start.change( { hour: event.start_time.hour, min: event.start_time.min})
+  end
+  
   def end_time
     if event.repeat_ends_on < collection_end
-      event.repeat_ends_on
+      # event.repeat_ends_on #fix_me
+      collection_end #this is wrong
     else
       collection_end
     end
@@ -35,7 +47,7 @@ class Recurrence
   def recurring_days
     DAYS_OF_THE_WEEK.reject do |r|
       ((event.repeats_weekly_each_days_of_the_week_mask || 0) & 2**DAYS_OF_THE_WEEK.index(r)).zero?
-    end.to_sym
+    end.map {|day| day.to_sym}
   end
   
     
@@ -107,11 +119,11 @@ class Recurrence
     event.repeat_ends && event.repeat_ends_on.present? ? event.repeat_ends_on.to_time : nil
   end
 
-  def recurring_days
-    DAYS_OF_THE_WEEK.reject do |r|
-      ((event.repeats_weekly_each_days_of_the_week_mask || 0) & 2**DAYS_OF_THE_WEEK.index(r)).zero?
-    end.to_sym
-  end
+  # def recurring_days
+  #   DAYS_OF_THE_WEEK.reject do |r|
+  #     ((event.repeats_weekly_each_days_of_the_week_mask || 0) & 2**DAYS_OF_THE_WEEK.index(r)).zero?
+  #   end
+  # end
   
   #below here unrelated to fetching list of recurring events
 

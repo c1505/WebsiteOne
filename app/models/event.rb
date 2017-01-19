@@ -31,6 +31,8 @@ class Event < ActiveRecord::Base
   def self.base_events(project)
     project.nil? ? Event.all : Event.where(project_id: project)
   end
+  
+
 
   def self.upcoming_events(project=nil)
     Event.base_events(project).inject([]) do |memo, event|
@@ -38,8 +40,24 @@ class Event < ActiveRecord::Base
     end.flatten.sort_by { |e| e[:time] }
   end
   
+  def self.recurring_base_events(project=nil)
+    if project
+      Event.where(repeats: "weekly", project: project)
+    else
+      Event.where(repeats: "weekly")
+    end
+  end
+  
+  def self.one_time_events(project=nil)
+    if project
+      Event.where(repeats: "never", project: project)
+    else
+      Event.where(repeats: "never")
+    end
+  end
+  
   def self.reccurences(project=nil)
-    Event.base_events(project).inject([]) do |memo, event|
+    Event.recurring_base_events(project).inject([]) do |memo, event|
       memo << Recurrence.new(event).next_occurrences #maybe refactor further.  odd to get back different class
     end.flatten.sort_by { |e| e[:time] }
   end
