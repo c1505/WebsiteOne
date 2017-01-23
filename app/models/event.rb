@@ -56,10 +56,29 @@ class Event < ActiveRecord::Base
     end
   end
   
+  def self.transform_events(events)
+    events
+    arr = [] #implement with tap
+    events.each do |event|
+      arr << { event: event, time: event.start_datetime }
+    end
+    arr
+  end
+  
+  def self.merge_events(events1, events2)
+    total = events1 + events2
+    total.flatten.sort_by { |event| event[:time] }
+  end
+  
   def self.reccurences(project=nil)
     Event.recurring_base_events(project).inject([]) do |memo, event|
       memo << Recurrence.new(event).next_occurrences #maybe refactor further.  odd to get back different class
-    end.flatten.sort_by { |e| e[:time] }
+    end
+  end
+    
+    # Event.recurring_base_events(project).inject([]) do |memo, event|
+    #   memo << Recurrence.new(event).next_occurrences #maybe refactor further.  odd to get back different class
+    # end.flatten.sort_by { |e| e[:time] }
   end
   
   def self.hookups
