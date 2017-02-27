@@ -529,6 +529,32 @@ describe Event, :type => :model do
     it 'shows repeating events' do 
       expect(Event.upcoming_events).to eq(Event.reccurences)
     end
+    
+  end
+  
+  describe 'returns one time events' do
+    before(:each) do
+      @event3 = FactoryGirl.create(Event,
+                                          name: 'one time event',
+                                          category: 'Scrum',
+                                          description: '',
+                                          start_datetime: 'Mon, 17 Jun 2013 09:00:00 UTC',
+                                          duration: 600,
+                                          repeats: 'never',
+                                          repeats_every_n_weeks: nil,
+                                          repeat_ends_string: 'on',
+                                          repeat_ends: false,
+                                          repeat_ends_on: 'Mon, 17 Jun 2018',
+                                          time_zone: 'Eastern Time (US & Canada)')
+      end
+    
+    it 'shows one time events' do 
+      Delorean.time_travel_to(Time.parse('2013-06-17 08:00:01 UTC'))
+      binding.pry
+      expect(Event.upcoming_events.first.name).to eq('one time event')
+      expect(Event.reccurences.first.name).to eq('one time event')
+      
+    end
   end
     
 end

@@ -56,14 +56,14 @@ class Event < ActiveRecord::Base
     end
   end
   
-  def self.transform_events(events)
-    events
-    arr = [] #implement with tap
-    events.each do |event|
-      arr << { event: event, time: event.start_datetime }
-    end
-    arr
-  end
+  # def self.transform_events(events)
+  #   events
+  #   arr = [] #implement with tap
+  #   events.each do |event|
+  #     arr << { event: event, time: event.start_datetime }
+  #   end
+  #   arr
+  # end
   
   def self.merge_events(events1, events2)
     total = events1 + events2
@@ -73,13 +73,13 @@ class Event < ActiveRecord::Base
   def self.reccurences(project=nil)
     Event.recurring_base_events(project).inject([]) do |memo, event|
       memo << Recurrence.new(event).next_occurrences #maybe refactor further.  odd to get back different class
-    end
+    end.flatten.sort_by { |e| e[:time] }
   end
     
     # Event.recurring_base_events(project).inject([]) do |memo, event|
     #   memo << Recurrence.new(event).next_occurrences #maybe refactor further.  odd to get back different class
     # end.flatten.sort_by { |e| e[:time] }
-  end
+  # endqq
   
   def self.hookups
     Event.where(category: "PairProgramming")
@@ -281,4 +281,5 @@ class Event < ActiveRecord::Base
   def repeating_and_ends?
     repeats != 'never' && repeat_ends && !repeat_ends_on.blank?
   end
+  
 end
