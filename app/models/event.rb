@@ -17,7 +17,7 @@ class Event < ActiveRecord::Base
   attr_accessor :next_occurrence_time_attr
   attr_accessor :repeat_ends_string
 
-  COLLECTION_TIME_FUTURE = 10.days
+  COLLECTION_TIME_FUTURE = 10.days #change these to give the timedate
   COLLECTION_TIME_PAST = 15.minutes
 
   REPEATS_OPTIONS = %w[never weekly]
@@ -32,8 +32,6 @@ class Event < ActiveRecord::Base
     project.nil? ? Event.all : Event.where(project_id: project)
   end
   
-
-
   def self.upcoming_events(project=nil)
     Event.base_events(project).inject([]) do |memo, event|
       memo << event.next_occurrences
@@ -48,38 +46,35 @@ class Event < ActiveRecord::Base
     end
   end
   
+  def self.refactored_upcoming_events(project=nil)
+    r = self.reccurences(project)
+    s = self.transform_events( self.one_time_events(project) )
+    (r + s).flatten.sort_by {|event| event[:time] }
+  end
+  
+  ## Helper ##
   def self.one_time_events(project=nil)
     if project
-      Event.where(repeats: "never", project: project)
+      self.where(repeats: "never", project: project, start_datetime: (COLLECTION_TIME_PAST.ago..( Time.current + COLLECTION_TIME_FUTURE) ) )
     else
-      Event.where(repeats: "never")
+      self.where(repeats: "never", start_datetime: (COLLECTION_TIME_PAST.ago..( Time.current + COLLECTION_TIME_FUTURE) )  )
     end
   end
   
-  # def self.transform_events(events)
-  #   events
-  #   arr = [] #implement with tap
-  #   events.each do |event|
-  #     arr << { event: event, time: event.start_datetime }
-  #   end
-  #   arr
-  # end
-  
-  def self.merge_events(events1, events2)
-    total = events1 + events2
-    total.flatten.sort_by { |event| event[:time] }
+  ## Helper ##
+  def self.transform_events(events)
+    events.map do |event|
+      { event: event, time: event.start_datetime }
+    end
   end
   
+  ## Helper ##
   def self.reccurences(project=nil)
-    Event.recurring_base_events(project).inject([]) do |memo, event|
+    self.recurring_base_events(project).inject([]) do |memo, event|
       memo << Recurrence.new(event).next_occurrences #maybe refactor further.  odd to get back different class
     end.flatten.sort_by { |e| e[:time] }
   end
-    
-    # Event.recurring_base_events(project).inject([]) do |memo, event|
-    #   memo << Recurrence.new(event).next_occurrences #maybe refactor further.  odd to get back different class
-    # end.flatten.sort_by { |e| e[:time] }
-  # endqq
+
   
   def self.hookups
     Event.where(category: "PairProgramming")

@@ -34,8 +34,7 @@ class Recurrence
   
   def end_time
     if event.repeat_ends_on < collection_end
-      # event.repeat_ends_on #fix_me
-      collection_end #this is wrong
+      event.repeat_ends_on
     else
       collection_end
     end
