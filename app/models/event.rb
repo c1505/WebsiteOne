@@ -46,11 +46,11 @@ class Event < ActiveRecord::Base
     end
   end
   
-  def self.refactored_upcoming_events(project=nil)
-    r = self.reccurences(project)
-    s = self.transform_events( self.one_time_events(project) )
-    (r + s).flatten.sort_by {|event| event[:time] }
-  end
+  # def self.upcoming_events(project=nil)
+  #   r = self.reccurences(project)
+  #   s = self.transform_events( self.one_time_events(project) )
+  #   (r + s).flatten.sort_by {|event| event[:time] }
+  # end
   
   ## Helper ##
   def self.one_time_events(project=nil)
@@ -72,7 +72,7 @@ class Event < ActiveRecord::Base
   def self.reccurences(project=nil)
     self.recurring_base_events(project).inject([]) do |memo, event|
       memo << Recurrence.new(event).next_occurrences #maybe refactor further.  odd to get back different class
-    end.flatten.sort_by { |e| e[:time] }
+    end.flatten
   end
 
   

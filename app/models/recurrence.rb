@@ -21,7 +21,6 @@ class Recurrence
     occurrences.map do |occurrence|
       { event: event, time: occurrence }
     end
-     #not sure if the previous method took into account reccurence ending
     # only recurring events should make it here
     # repeats is currently 'weekly' and 'never'.  it should be true and false.  
   end
