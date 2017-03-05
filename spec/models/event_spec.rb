@@ -78,6 +78,7 @@ describe Event, :type => :model do
   end
 
   context 'should create a scrum event that ' do
+    ### FIXME these test schedule rather than the public methods
     it 'is scheduled for one occasion' do
       event = FactoryGirl.build_stubbed(Event,
                                         name: 'one time event',
@@ -178,26 +179,15 @@ describe Event, :type => :model do
   end
 
   context 'Event url' do
-    before (:each) do
-      @event = {name: 'one time event',
-                category: 'Scrum',
-                description: '',
-                start_datetime: 'Mon, 17 Jun 2013 09:00:00 UTC',
-                duration: 600,
-                repeats: 'never',
-                repeats_every_n_weeks: nil,
-                repeat_ends: 'never',
-                repeat_ends_on: 'Mon, 17 Jun 2013',
-                time_zone: 'Eastern Time (US & Canada)'}
-    end
 
     it 'should be set if valid' do
-      event = Event.create!(@event.merge(:url => 'http://google.com'))
+      event = FactoryGirl.build(Event, :url => 'http://google.com')
       expect(event.save).to be_truthy
     end
 
     it 'should be rejected if invalid' do
-      event = Event.create(@event.merge(:url => 'http:google.com'))
+      event = FactoryGirl.build(Event, :url => 'http:google.com')
+      event.valid?
       expect(event.errors[:url].size).to eq(1)
     end
   end
@@ -281,13 +271,6 @@ describe Event, :type => :model do
         end
       end
 
-      context ':start_time option' do
-        it 'should return only occurrences after a specific time' do
-          start_time = Time.parse('2014-03-09 9:27:00 UTC')
-          Delorean.time_travel_to(Time.parse('2014-03-05 09:27:00 UTC'))
-          expect(@event.next_occurrence_time_method(start_time)).to eq(Time.parse('2014-03-09 10:30:00 UTC'))
-        end
-      end
     end
   end
 
@@ -344,14 +327,14 @@ describe Event, :type => :model do
 
   describe '#upcoming_events' do
     before(:each) do
-      @event1 = FactoryGirl.create(Event,
+      FactoryGirl.create(Event,
                                  category: 'Scrum',
                                  name: 'Spec Scrum one-time',
                                  start_datetime: '2015-06-15 09:20:00 UTC',
                                  duration: 30,
                                  repeats: 'never'
       )
-      @event2 = FactoryGirl.create(Event,
+      FactoryGirl.create(Event,
                                  category: 'Scrum',
                                  name: 'Spec Scrum one-time',
                                  start_datetime: '2015-06-15 09:25:00 UTC',
