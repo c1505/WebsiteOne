@@ -104,11 +104,6 @@ class Event < ActiveRecord::Base
     first_datetime.to_datetime.utc
   end
 
-  def next_occurrence_time_method(start = Time.now)
-    next_occurrence = next_event_occurrence_with_time(start)
-    next_occurrence.present? ? next_occurrence[:time] : nil
-  end
-
   def self.next_occurrence(event_type, begin_time = NEXT_SCRUM_COLLECTION_TIME_PAST.ago)
     events_with_times = []
     events_with_times = Event.where(category: event_type).map { |event|
@@ -224,6 +219,11 @@ class Event < ActiveRecord::Base
   end
 
   private
+
+  def next_occurrence_time_method(start = Time.now)
+    next_occurrence = next_event_occurrence_with_time(start)
+    next_occurrence.present? ? next_occurrence[:time] : nil
+  end
 
   def before_current_end_time?
     Time.now < (schedule.previous_occurrence(Time.now) + duration*60)

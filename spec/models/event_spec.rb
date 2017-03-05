@@ -77,50 +77,6 @@ describe Event, :type => :model do
     end
   end
 
-  describe '#last_hangout' do
-    it 'returns the latest hangout' do
-      hangout1 = subject.event_instances.create
-      hangout2 = subject.event_instances.create(created_at: Date.yesterday, updated_at: Date.yesterday)
-
-      expect(subject.last_hangout).to eq(hangout1)
-    end
-  end
-
-  context 'can remove event instance' do
-    before(:each) do
-      @event = FactoryGirl.build(Event,
-                                 name: 'Spec Scrum',
-                                 start_datetime: 'Mon, 17 Jun 2013 09:00:00 UTC',
-                                 duration: 30,
-                                 repeats: 'weekly',
-                                 repeats_every_n_weeks: 1,
-                                 repeats_weekly_each_days_of_the_week_mask: 0b1100000,
-                                 repeat_ends: true,
-                                 repeat_ends_on: '2014-03-08')
-    end
-
-    it 'should remove an event instance when requested and date found' do
-      Delorean.time_travel_to(Time.parse('2013-06-16 09:27:00 UTC'))
-      @event.remove_from_schedule(Time.parse('2013-6-23 09:00:00 UTC'))
-      expect(@event.schedule.first(4)).to eq(['Sat, 22 Jun 2013 09:00:00 UTC +00:00', 'Sat, 29 Jun 2013 09:00:00 UTC +00:00', 'Sun, 30 Jun 2013 09:00:00 UTC +00:00', 'Sat, 06 Jul 2013 09:00:00 UTC +00:00'])
-    end
-
-    it 'should move the start date forward when the event instance to be removed is the first in the series' do
-      Delorean.time_travel_to(Time.parse('2013-06-16 09:27:00 UTC'))
-      @event.remove_from_schedule(Time.parse('2013-6-22 09:00:00 UTC'))
-      expect(@event.start_datetime).to eq('Sun, 23 Jun 2013 09:00:00 UTC +00:00')
-      expect(@event.schedule.first(4)).to eq(['Sun, 23 Jun 2013 09:00:00 UTC +00:00', 'Sat, 29 Jun 2013 09:00:00 UTC +00:00', 'Sun, 30 Jun 2013 09:00:00 UTC +00:00', 'Sat, 06 Jul 2013 09:00:00 UTC +00:00'])
-    end
-
-    it 'event exclusions should be persistent' do
-      Delorean.time_travel_to(Time.parse('2013-06-16 09:27:00 UTC'))
-      @event.remove_from_schedule(Time.parse('2013-6-23 09:00:00 UTC'))
-      event = Event.find_by(name: 'Spec Scrum')
-      expect(event.schedule.first(4)).to eq(['Sat, 22 Jun 2013 09:00:00 UTC +00:00', 'Sat, 29 Jun 2013 09:00:00 UTC +00:00', 'Sun, 30 Jun 2013 09:00:00 UTC +00:00', 'Sat, 06 Jul 2013 09:00:00 UTC +00:00'])
-    end
-  end
-
-
   context 'should create a scrum event that ' do
     it 'is scheduled for one occasion' do
       event = FactoryGirl.build_stubbed(Event,
@@ -307,27 +263,7 @@ describe Event, :type => :model do
       allow(@event).to receive(:friendly_id).and_return('spec-scrum')
     end
 
-    it 'should return the next occurence of the event' do
-      Delorean.time_travel_to(Time.parse('2014-03-07 09:27:00 UTC'))
-      expect(@event.next_occurrence_time_method).to eq(Time.parse('2014-03-07 10:30:00 UTC'))
-    end
-
-    it 'includes the event that has been started within the last 15 minutes' do
-      Delorean.time_travel_to(Time.parse('2014-03-07 10:44:00 UTC'))
-      expect(@event.next_occurrence_time_method(15.minutes.ago)).to eq(Time.parse('2014-03-07 10:30:00 UTC'))
-    end
-
-    it 'does not include the event that has been started within more than 15 minutes ago' do
-      options = {}
-      Delorean.time_travel_to(Time.parse('2014-03-07 10:46:00 UTC'))
-      expect(@event.next_occurrence_time_method).to eq(Time.parse('2014-03-08 10:30:00 UTC'))
-    end
-
     context 'test against start_datetime and repeat_ends_on' do
-      it 'starts in the future' do
-        Delorean.time_travel_to(Time.parse('2014-03-01 09:27:00 UTC'))
-        expect(@event.next_occurrence_time_method).to eq(Time.parse('2014-03-07 10:30:00 UTC'))
-      end
 
       it 'already ended in the past' do
         Delorean.time_travel_to(Time.parse('2016-02-07 09:27:00 UTC'))
@@ -363,65 +299,6 @@ describe Event, :type => :model do
                                          duration: 30)
     end
 
-    it 'should return the start_time if it is specified' do
-      Delorean.time_travel_to(Time.parse('2015-06-23 09:27:00 UTC'))
-      options = {start_time: '2015-06-20 09:27:00 UTC'}
-      expect(@event.start_datetime_for_collection(options)).to eq(options[:start_time])
-    end
-  end
-
-  describe 'Event#final_datetime_for_collection for repeating event with ends_on' do
-    before do
-      @event = FactoryGirl.build_stubbed(Event,
-                                         name: 'Spec Scrum ends',
-                                         start_datetime: '2014-03-07 10:30:00 UTC',
-                                         repeats: 'weekly',
-                                         repeats_every_n_weeks: 1,
-                                         repeats_weekly_each_days_of_the_week_mask: 0b1111111,
-                                         repeat_ends: true,
-                                         repeat_ends_on: '2015-6-25')
-    end
-
-    it 'should return the repeat_ends_on datetime if that comes first' do
-      Delorean.time_travel_to(Time.parse('2015-06-23 09:27:00 UTC'))
-      options = {end_time: '2015-06-30 09:27:00 UTC'}
-      expect(@event.final_datetime_for_collection(options)).to eq(@event.repeat_ends_on.to_datetime)
-    end
-
-    it 'should return the options[:endtime] if that comes before repeat_ends_on' do
-      Delorean.time_travel_to(Time.parse('2015-06-15 09:27:00 UTC'))
-      options = {end_time: '2015-06-20 09:27:00 UTC'}
-      expect(@event.final_datetime_for_collection(options)).to eq(options[:end_time].to_datetime)
-    end
-
-    it 'should return the repeat_ends_on datetime if there is no options[end_time] and the ends_on datetime is less than 10 days away' do
-      Delorean.time_travel_to(Time.parse('2015-06-23 09:27:00 UTC'))
-      expect(@event.final_datetime_for_collection).to eq(@event.repeat_ends_on.to_datetime)
-    end
-  end
-
-  describe 'Event#final_datetime_for_display for never-ending event' do
-    before do
-      @event = FactoryGirl.build_stubbed(Event,
-                                         name: 'Spec Scrum never-ending',
-                                         start_datetime: '2014-03-07 10:30:00 UTC',
-                                         repeats: 'weekly',
-                                         repeats_every_n_weeks: 1,
-                                         repeats_weekly_each_days_of_the_week_mask: 0b1111111,
-                                         repeat_ends: false)
-    end
-
-    it 'should return the options[:endtime] when specified' do
-      Delorean.time_travel_to(Time.parse('2015-06-15 09:27:00 UTC'))
-      options = {end_time: '2015-06-20 09:27:00 UTC'}
-      expect(@event.final_datetime_for_collection(options)).to eq(options[:end_time].to_datetime)
-    end
-
-    it 'should return 10 days from now if there is no options[end_time]' do
-      Delorean.time_travel_to(Time.parse('2015-06-23 09:27:00 UTC'))
-      # 10 days is the default
-      expect(@event.final_datetime_for_collection().to_datetime.to_s).to eq(10.days.from_now.to_datetime.to_s)
-    end
   end
 
   describe 'Event.next_event_occurence' do
@@ -439,7 +316,6 @@ describe Event, :type => :model do
     end
 
     it 'should return events that were schedule 15 minutes earlier or less' do
-      #15 minutes is the default for COLLECTION_TIME_PAST
       Delorean.time_travel_to(Time.parse('2014-03-07 10:44:59 UTC'))
       expect(Event.next_occurrence(:scrum)).to eq @event
     end
