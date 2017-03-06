@@ -11,6 +11,10 @@ FactoryGirl.define do
     repeat_ends_string 'on'
     repeat_ends_on '2015-03-31'
     time_zone 'UTC'
+
+    factory :single_event do
+      repeats 'never'
+    end
   end
   factory :invalid_event do
     name nil
