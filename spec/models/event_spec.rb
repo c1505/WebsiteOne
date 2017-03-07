@@ -256,7 +256,7 @@ describe Event, :type => :model do
 
   end
 
-  describe 'Event.next_event_occurence' do
+  describe 'Event.next_event_occurence' do #FIXME next occurance returns an event?
     @event = FactoryGirl.build(Event,
                                category: 'Scrum',
                                name: 'Spec Scrum one-time',
@@ -345,22 +345,22 @@ describe Event, :type => :model do
   end
 
   describe '#upcoming_events' do
-  before(:each) do
-    FactoryGirl.create(Event,
-                               category: 'Scrum',
-                               name: 'Spec Scrum one-time',
-                               start_datetime: '2015-06-15 09:20:00 UTC',
-                               duration: 30,
-                               repeats: 'never'
-    )
-    FactoryGirl.create(Event,
-                               category: 'Scrum',
-                               name: 'Spec Scrum one-time',
-                               start_datetime: '2015-06-15 09:25:00 UTC',
-                               duration: 30,
-                               repeats: 'never'
-    )
-  end
+    before(:each) do
+      FactoryGirl.create(Event,
+                                 category: 'Scrum',
+                                 name: 'Spec Scrum one-time',
+                                 start_datetime: '2015-06-15 09:20:00 UTC',
+                                 duration: 30,
+                                 repeats: 'never'
+      )
+      FactoryGirl.create(Event,
+                                 category: 'Scrum',
+                                 name: 'Spec Scrum one-time',
+                                 start_datetime: '2015-06-15 09:25:00 UTC',
+                                 duration: 30,
+                                 repeats: 'never'
+      )
+    end
 
   it 'shows future events' do
     Delorean.time_travel_to(Time.parse('2015-06-15 09:25:00 UTC'))
@@ -393,36 +393,36 @@ describe Event, :type => :model do
 
   it 'returns non-repeating events'
 
-    describe 'returns repeating events' do
-  before(:each) do
-    FactoryGirl.create(:single_event,
-                                      start_datetime: 'Mon, 17 Jun 2013 09:00:00 UTC',
-                                      time_zone: 'Eastern Time (US & Canada)')
-
-    FactoryGirl.create(:every_weekend_event,
-                                      start_datetime: 'Mon, 17 Jun 2013 09:00:00 UTC',
-                                      repeat_ends: false,
-                                      repeat_ends_on: 'Tue, 25 Jun 2018',
-                                      time_zone: 'Eastern Time (US & Canada)')
-
-    FactoryGirl.create(Event,
-                                      name: 'every Sunday event',
-                                      start_datetime: 'Mon, 17 Jun 2013 09:00:00 UTC',
-                                      duration: 600,
-                                      repeats_weekly_each_days_of_the_week_mask: 64,
-                                      repeat_ends: false,
-                                      time_zone: 'Eastern Time (US & Canada)')
-
-
-    FactoryGirl.create(Event,
-                                      name: 'every Monday event',
-                                      start_datetime: 'Mon, 17 Jun 2013 09:00:00 UTC',
-                                      duration: 60,
-                                      repeats_weekly_each_days_of_the_week_mask: 1,
-                                      repeat_ends: true,
-                                      repeat_ends_on: 'Mon, 16 Jun 2013',
-                                      time_zone: 'UTC')
-  end
+  describe 'returns repeating events' do
+    before(:each) do
+      FactoryGirl.create(:single_event,
+                                        start_datetime: 'Mon, 17 Jun 2013 09:00:00 UTC',
+                                        time_zone: 'Eastern Time (US & Canada)')
+  
+      FactoryGirl.create(:every_weekend_event,
+                                        start_datetime: 'Mon, 17 Jun 2013 09:00:00 UTC',
+                                        repeat_ends: false,
+                                        repeat_ends_on: 'Tue, 25 Jun 2018',
+                                        time_zone: 'Eastern Time (US & Canada)')
+  
+      FactoryGirl.create(Event,
+                                        name: 'every Sunday event',
+                                        start_datetime: 'Mon, 17 Jun 2013 09:00:00 UTC',
+                                        duration: 600,
+                                        repeats_weekly_each_days_of_the_week_mask: 64,
+                                        repeat_ends: false,
+                                        time_zone: 'Eastern Time (US & Canada)')
+  
+  
+      FactoryGirl.create(Event,
+                                        name: 'every Monday event',
+                                        start_datetime: 'Mon, 17 Jun 2013 09:00:00 UTC',
+                                        duration: 60,
+                                        repeats_weekly_each_days_of_the_week_mask: 1,
+                                        repeat_ends: true,
+                                        repeat_ends_on: 'Mon, 16 Jun 2013',
+                                        time_zone: 'UTC')
+    end
 
   it 'shows repeating events' do #Change Refactor Test
     # expect(Event.upcoming_events).to eq(Event.refactored_upcoming_events)
@@ -456,12 +456,18 @@ describe 'returns one time events' do
 # what would fail?
   # events in different order
     #returns events sorted by time
+      #make sure it is sorted by recurrence date and time and not just the original date
   # event not in the right format
+    #returns a hash of base events and times
   # events included that shouldn't be
+    #single events
+    #events that have gone past end date
+    #before collection start time
+    #after collection end time
   # events not included that should be
-  # whole hash in the wrong format
   # incorrect time scheduled
   # incorrect day scheduled
+  # issues with time zones
 end
 
   end
