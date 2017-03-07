@@ -89,16 +89,9 @@ describe Event, :type => :model do
     end
 
     it 'is scheduled for every weekend' do
-      event = FactoryGirl.build_stubbed(Event,
-                                        name: 'every weekend event',
-                                        category: 'Scrum',
-                                        description: '',
+      event = FactoryGirl.build_stubbed(:every_weekend_event,
                                         start_datetime: 'Mon, 17 Jun 2013 09:00:00 UTC',
                                         duration: 600,
-                                        repeats: 'weekly',
-                                        repeats_every_n_weeks: 1,
-                                        repeats_weekly_each_days_of_the_week_mask: 96,
-                                        repeat_ends: 'never',
                                         repeat_ends_on: 'Tue, 25 Jun 2013',
                                         time_zone: 'Eastern Time (US & Canada)')
       expect(event.schedule.first(5)).to eq(['Sat, 22 Jun 2013 09:00:00 UTC +00:00', 'Sun, 23 Jun 2013 09:00:00 UTC +00:00', 'Sat, 29 Jun 2013 09:00:00 UTC +00:00', 'Sun, 30 Jun 2013 09:00:00 UTC +00:00', 'Sat, 06 Jul 2013 09:00:00 UTC +00:00'])
@@ -106,15 +99,10 @@ describe Event, :type => :model do
 
     it 'is scheduled for every Sunday' do
       event = FactoryGirl.build_stubbed(Event,
-                                        name: 'every Sunday event',
-                                        category: 'Scrum',
-                                        description: '',
                                         start_datetime: 'Mon, 17 Jun 2013 09:00:00 UTC',
                                         duration: 600,
-                                        repeats: 'weekly',
-                                        repeats_every_n_weeks: 1,
                                         repeats_weekly_each_days_of_the_week_mask: 64,
-                                        repeat_ends: 'never',
+                                        repeat_ends: 'never', #conflict between ending never and ending on date below
                                         repeat_ends_on: 'Mon, 17 Jun 2013',
                                         time_zone: 'Eastern Time (US & Canada)')
       expect(event.schedule.first(5)).to eq(['Sun, 23 Jun 2013 09:00:00 UTC +00:00', 'Sun, 30 Jun 2013 09:00:00 UTC +00:00', 'Sun, 07 Jul 2013 09:00:00 UTC +00:00', 'Sun, 14 Jul 2013 09:00:00 UTC +00:00', 'Sun, 21 Jul 2013 09:00:00 UTC +00:00'])
@@ -122,13 +110,8 @@ describe Event, :type => :model do
 
     it 'is scheduled for every Monday' do
       event = FactoryGirl.build_stubbed(Event,
-                                        name: 'every Monday event',
-                                        category: 'Scrum',
-                                        description: '',
                                         start_datetime: 'Mon, 17 Jun 2013 09:00:00 UTC',
                                         duration: 600,
-                                        repeats: 'weekly',
-                                        repeats_every_n_weeks: 1,
                                         repeats_weekly_each_days_of_the_week_mask: 1,
                                         repeat_ends: 'never',
                                         repeat_ends_on: 'Mon, 17 Jun 2013',
@@ -140,8 +123,6 @@ describe Event, :type => :model do
   context 'should create a hookup event that' do
     before do
       @event = FactoryGirl.build_stubbed(Event,
-                                         name: 'PP Monday event',
-                                         category: 'PairProgramming',
                                          start_datetime: 'Mon, 17 Jun 2014 09:00:00 UTC',
                                          duration: 90,
                                          repeats: 'never',
@@ -188,13 +169,11 @@ describe Event, :type => :model do
   describe '#next_event_occurrence_with_time' do
     before(:each) do
       @event = FactoryGirl.build(Event,
-                                 name: 'Spec Scrum',
                                  start_datetime: 'Mon, 10 Jun 2013 09:00:00 UTC',
                                  duration: 30,
                                  repeats: 'weekly',
-                                 repeats_every_n_weeks: 1,
                                  repeats_weekly_each_days_of_the_week_mask: 0b1000000,
-                                 repeat_ends: true,
+                                 repeat_ends: true, #FIXME sometimes this is boolean and sometimes string in tests
                                  repeat_ends_on: '2013-07-01')
     end
 
@@ -428,25 +407,17 @@ describe Event, :type => :model do
 
     FactoryGirl.create(Event,
                                       name: 'every Sunday event',
-                                      category: 'Scrum',
-                                      description: '',
                                       start_datetime: 'Mon, 17 Jun 2013 09:00:00 UTC',
                                       duration: 600,
-                                      repeats: 'weekly',
-                                      repeats_every_n_weeks: 1,
                                       repeats_weekly_each_days_of_the_week_mask: 64,
                                       repeat_ends: false,
-                                      repeat_ends_on: 'Mon, 17 Jun 2018',
                                       time_zone: 'Eastern Time (US & Canada)')
+
 
     FactoryGirl.create(Event,
                                       name: 'every Monday event',
-                                      category: 'Scrum',
-                                      description: '',
                                       start_datetime: 'Mon, 17 Jun 2013 09:00:00 UTC',
                                       duration: 60,
-                                      repeats: 'weekly',
-                                      repeats_every_n_weeks: 1,
                                       repeats_weekly_each_days_of_the_week_mask: 1,
                                       repeat_ends: true,
                                       repeat_ends_on: 'Mon, 16 Jun 2013',
