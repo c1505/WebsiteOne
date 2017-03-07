@@ -1,4 +1,4 @@
-FactoryGirl.define do
+FactoryGirl.define do #not sure if it is right to have these integers as strings.  still works
   factory :event do
     sequence(:name) { |n| "Event #{n}" }
     category 'Scrum'
@@ -14,6 +14,10 @@ FactoryGirl.define do
 
     factory :single_event do
       repeats 'never'
+    end
+
+    factory :every_weekend_event do
+      repeats_weekly_each_days_of_the_week_mask '96'
     end
   end
   factory :invalid_event do

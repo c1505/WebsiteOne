@@ -80,16 +80,9 @@ describe Event, :type => :model do
   context 'should create a scrum event that ' do
     ### FIXME these test schedule rather than the public methods
     it 'is scheduled for one occasion' do
-      event = FactoryGirl.build_stubbed(Event,
-                                        name: 'one time event',
-                                        category: 'Scrum',
-                                        description: '',
+      event = FactoryGirl.build_stubbed(:single_event,
                                         start_datetime: 'Mon, 17 Jun 2013 09:00:00 UTC',
                                         duration: 600,
-                                        repeats: 'never',
-                                        repeats_every_n_weeks: nil,
-                                        repeat_ends_string: 'on',
-                                        repeat_ends: true,
                                         repeat_ends_on: 'Mon, 17 Jun 2013',
                                         time_zone: 'Eastern Time (US & Canada)')
       expect(event.schedule.first(5)).to eq(['Mon, 17 Jun 2013 09:00:00 UTC +00:00'])
@@ -164,14 +157,14 @@ describe Event, :type => :model do
     end
 
     it 'should mark as active events which have started and have not ended' do
-      hangout = @event.event_instances.create(hangout_url: 'anything@anything.com',
+      @event.event_instances.create(hangout_url: 'anything@anything.com',
                                               updated_at: '2014-06-17 10:25:00 UTC')
       Delorean.time_travel_to(Time.parse('2014-06-17 10:26:00 UTC'))
       expect(@event).to be_live
     end
 
     it 'should not be started if events have not started' do
-      hangout = @event.event_instances.create(hangout_url: nil,
+      @event.event_instances.create(hangout_url: nil,
                                               updated_at: nil)
       Delorean.time_travel_to(Time.parse('2014-06-17 9:30:00 UTC'))
       expect(@event.live?).to be_falsey
@@ -369,6 +362,136 @@ describe Event, :type => :model do
       expect(event_end_time).to be < Time.current
       expect(event_instance.event).to eq(Event.upcoming_events.last[:event])
     end
+
+  end
+
+  describe '#upcoming_events' do
+  before(:each) do
+    FactoryGirl.create(Event,
+                               category: 'Scrum',
+                               name: 'Spec Scrum one-time',
+                               start_datetime: '2015-06-15 09:20:00 UTC',
+                               duration: 30,
+                               repeats: 'never'
+    )
+    FactoryGirl.create(Event,
+                               category: 'Scrum',
+                               name: 'Spec Scrum one-time',
+                               start_datetime: '2015-06-15 09:25:00 UTC',
+                               duration: 30,
+                               repeats: 'never'
+    )
+  end
+
+  it 'shows future events' do
+    Delorean.time_travel_to(Time.parse('2015-06-15 09:25:00 UTC'))
+    expect(Event.upcoming_events.count).to eq(2)
+  end
+
+  it 'does not show finished events' do
+    Delorean.time_travel_to(Time.parse('2015-06-15 09:51:00 UTC'))
+    expect(Event.upcoming_events.count).to eq(1)
+  end
+
+  it 'returns event 1 minute before ending' do
+    Delorean.time_travel_to(Time.parse('2015-06-15 09:54:00 UTC'))
+    expect(Event.upcoming_events.count).to eq(1)
+  end
+
+  it 'does not return event 1 minute after ending' do
+    Delorean.time_travel_to(Time.parse('2015-06-15 09:56:00 UTC'))
+    expect(Event.upcoming_events.count).to eq(0)
+  end
+
+  it 'returns event past event duration, but still live' do
+    event_instance = FactoryGirl.create(EventInstance)
+    event_end_time = event_instance.event.start_datetime + event_instance.event.duration.minutes
+    expect(event_end_time).to be < Time.current
+    expect(event_instance.event).to eq(Event.upcoming_events.last[:event])
+  end
+
+  it 'returns repeating events'
+
+  it 'returns non-repeating events'
+
+    describe 'returns repeating events' do
+  before(:each) do
+    FactoryGirl.create(:single_event,
+                                      start_datetime: 'Mon, 17 Jun 2013 09:00:00 UTC',
+                                      time_zone: 'Eastern Time (US & Canada)')
+
+    FactoryGirl.create(:every_weekend_event,
+                                      start_datetime: 'Mon, 17 Jun 2013 09:00:00 UTC',
+                                      repeat_ends: false,
+                                      repeat_ends_on: 'Tue, 25 Jun 2018',
+                                      time_zone: 'Eastern Time (US & Canada)')
+
+    FactoryGirl.create(Event,
+                                      name: 'every Sunday event',
+                                      category: 'Scrum',
+                                      description: '',
+                                      start_datetime: 'Mon, 17 Jun 2013 09:00:00 UTC',
+                                      duration: 600,
+                                      repeats: 'weekly',
+                                      repeats_every_n_weeks: 1,
+                                      repeats_weekly_each_days_of_the_week_mask: 64,
+                                      repeat_ends: false,
+                                      repeat_ends_on: 'Mon, 17 Jun 2018',
+                                      time_zone: 'Eastern Time (US & Canada)')
+
+    FactoryGirl.create(Event,
+                                      name: 'every Monday event',
+                                      category: 'Scrum',
+                                      description: '',
+                                      start_datetime: 'Mon, 17 Jun 2013 09:00:00 UTC',
+                                      duration: 60,
+                                      repeats: 'weekly',
+                                      repeats_every_n_weeks: 1,
+                                      repeats_weekly_each_days_of_the_week_mask: 1,
+                                      repeat_ends: true,
+                                      repeat_ends_on: 'Mon, 16 Jun 2013',
+                                      time_zone: 'UTC')
+  end
+
+  it 'shows repeating events' do #Change Refactor Test
+    # expect(Event.upcoming_events).to eq(Event.refactored_upcoming_events)
+  end
+
+   it 'does not show events past repeat end' do
+     Delorean.time_travel_to(Time.parse('2013-06-17 08:00:01 UTC'))
+    # expect(Event.upcoming_events).to eq Event.refactored_upcoming_events
+   end
+ end
+
+describe 'returns one time events' do
+  before(:each) do
+    @event3 = FactoryGirl.create(:single_event,
+            start_datetime: 'Mon, 17 Jun 2013 09:00:00 UTC',
+            time_zone: 'Eastern Time (US & Canada)')
+
+    @event4 = FactoryGirl.create(:single_event,
+            name: 'expired one time event',
+            start_datetime: 'Mon, 17 Jun 2013 06:00:00 UTC',
+            duration: 60,
+            time_zone: 'Eastern Time (US & Canada)')
+  end
+
+  it 'shows one time events until event is finished' do
+    Delorean.time_travel_to(Time.parse('2013-06-17 08:00:01 UTC'))
+    expect(Event.upcoming_events.count).to eq 1
+    expect(Event.upcoming_events.first[:event]).to eq(@event3)
+  end
+
+# what would fail?
+  # events in different order
+    #returns events sorted by time
+  # event not in the right format
+  # events included that shouldn't be
+  # events not included that should be
+  # whole hash in the wrong format
+  # incorrect time scheduled
+  # incorrect day scheduled
+end
 
   end
 end
