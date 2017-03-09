@@ -9,7 +9,7 @@ class Recurrence
   include IceCube
   
   COLLECTION_TIME_FUTURE = 10.days
-  COLLECTION_TIME_PAST = 15.minutes
+  COLLECTION_TIME_PAST = 300.minutes
   
   DAYS_OF_THE_WEEK = %w[monday tuesday wednesday thursday friday saturday sunday]
  
@@ -23,6 +23,8 @@ class Recurrence
     # only recurring events should make it here
     # repeats is currently 'weekly' and 'never'.  it should be true and false.  
   end
+  #how to test this?
+  
   
   private
   
@@ -31,6 +33,7 @@ class Recurrence
   end
   
   def end_time
+    return collection_end unless event.repeat_ends_on
     if event.repeat_ends_on < collection_end
       event.repeat_ends_on
     else

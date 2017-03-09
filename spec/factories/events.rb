@@ -19,6 +19,11 @@ FactoryGirl.define do #not sure if it is right to have these integers as strings
     factory :every_weekend_event do
       repeats_weekly_each_days_of_the_week_mask '96'
     end
+    
+    factory :repeating_forever_event do
+      repeat_ends false
+      repeat_ends_on nil
+    end
 
   end
   factory :invalid_event do

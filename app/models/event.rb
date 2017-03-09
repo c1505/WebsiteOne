@@ -24,6 +24,44 @@ class Event < ActiveRecord::Base
   REPEATS_OPTIONS = %w[never weekly]
   REPEAT_ENDS_OPTIONS = %w[on never]
   DAYS_OF_THE_WEEK = %w[monday tuesday wednesday thursday friday saturday sunday]
+  
+  ## Helper ##
+  def self.recurring_base_events(project=nil)
+    if project
+      Event.where(repeats: "weekly", project: project)
+    else
+      Event.where(repeats: "weekly")
+    end
+  end
+  
+  def self.refactored_upcoming_events(project=nil)
+    r = self.reccurences(project)
+    s = self.transform_events( self.one_time_events(project) )
+    (r + s).flatten.sort_by {|event| event[:time] }
+  end
+  
+  ## Helper ##
+  def self.one_time_events(project=nil)
+    if project
+      self.where(repeats: "never", project: project, start_datetime: (COLLECTION_TIME_PAST.ago..( Time.current + COLLECTION_TIME_FUTURE) ) )
+    else
+      self.where(repeats: "never", start_datetime: (COLLECTION_TIME_PAST.ago..( Time.current + COLLECTION_TIME_FUTURE) )  )
+    end
+  end
+  
+  ## Helper ##
+  def self.transform_events(events)
+    events.map do |event|
+      { event: event, time: event.start_datetime }
+    end
+  end
+  
+  ## Helper ##
+  def self.reccurences(project=nil)
+    self.recurring_base_events(project).inject([]) do |memo, event|
+      memo << Recurrence.new(event).next_occurrences #maybe refactor further.  odd to get back different class
+    end.flatten
+  end
 
   def set_repeat_ends_string
     @repeat_ends_string = repeat_ends ? "on" : "never"
