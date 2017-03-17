@@ -15,6 +15,7 @@ class Recurrence
  
   def next_occurrences(options = {})
     schedule = IceCube::Schedule.new(collection_start_including_event_time)
+    binding.pry
     schedule.add_recurrence_rule( IceCube::Rule.weekly.day(recurring_days) )
     occurrences = schedule.occurrences(end_time)
     occurrences.map do |occurrence|
@@ -46,5 +47,15 @@ class Recurrence
       ((event.repeats_weekly_each_days_of_the_week_mask || 0) & 2**DAYS_OF_THE_WEEK.index(r)).zero?
     end.map {|day| day.to_sym}
   end
+    # weekdays .  mask allows storage of a single integer to represent multiple days of the week
+        
+    # Mon: 1
+    # Tues: 2
+    # Wed: 4
+    # Thurs: 8 
+    # Fri: 16
+    # Sat: 32
+    # Sun: 64
+    
   
 end

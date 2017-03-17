@@ -41,6 +41,7 @@ class Event < ActiveRecord::Base
   end
   
   ## Helper ##
+  # change this to be all events i think
   def self.one_time_events(project=nil)
     if project
       self.where(repeats: "never", project: project, start_datetime: (COLLECTION_TIME_PAST.ago..( Time.current + COLLECTION_TIME_FUTURE) ) )

@@ -217,7 +217,7 @@ describe Event, :type => :model do
                                          name: 'Spec Scrum',
                                          start_datetime: '2014-03-07 10:30:00 UTC',
                                          duration: 30)
-      allow(@event).to receive(:repeats).and_return('weekly')
+      allow(@event).to receive(:repeats).and_return('weekly') #FIXME I don't think these parts are needed
       allow(@event).to receive(:repeats_every_n_weeks).and_return(1)
       allow(@event).to receive(:repeats_weekly_each_days_of_the_week_mask).and_return(0b1111111)
       allow(@event).to receive(:repeat_ends).and_return(true)
@@ -396,22 +396,19 @@ describe Event, :type => :model do
   describe 'returns repeating events' do
     before(:each) do
       FactoryGirl.create(:single_event,
-                                        start_datetime: 'Mon, 17 Jun 2013 09:00:00 UTC',
-                                        time_zone: 'Eastern Time (US & Canada)')
+                                        start_datetime: 'Mon, 17 Jun 2013 09:00:00 UTC')
   
-      FactoryGirl.create(:every_weekend_event,
-                                        start_datetime: 'Mon, 17 Jun 2013 09:00:00 UTC',
-                                        repeat_ends: false,
-                                        repeat_ends_on: 'Tue, 25 Jun 2018',
-                                        time_zone: 'Eastern Time (US & Canada)')
+      # FactoryGirl.create(:every_weekend_event,
+      #                                   start_datetime: 'Mon, 17 Jun 2013 09:00:00 UTC',
+      #                                   repeat_ends: false,
+      #                                   repeat_ends_on: 'Tue, 25 Jun 2018')
   
       FactoryGirl.create(Event,
                                         name: 'every Sunday event',
-                                        start_datetime: 'Mon, 17 Jun 2013 09:00:00 UTC',
+                                        start_datetime: 'Sun, 26 Mar 2013 09:00:00 UTC',
                                         duration: 600,
                                         repeats_weekly_each_days_of_the_week_mask: 64,
-                                        repeat_ends: false,
-                                        time_zone: 'Eastern Time (US & Canada)')
+                                        repeat_ends: false)
   
   
       FactoryGirl.create(Event,
@@ -420,17 +417,18 @@ describe Event, :type => :model do
                                         duration: 60,
                                         repeats_weekly_each_days_of_the_week_mask: 1,
                                         repeat_ends: true,
-                                        repeat_ends_on: 'Mon, 16 Jun 2013',
-                                        time_zone: 'UTC')
+                                        repeat_ends_on: 'Mon, 16 Jun 2013')
     end
 
   it 'shows repeating events' do #Change Refactor Test
-    # expect(Event.upcoming_events).to eq(Event.refactored_upcoming_events)
+  
+    Delorean.time_travel_to(Time.parse('2013-06-17 08:00:01 UTC'))
+    expect(Event.upcoming_events).to eq(Event.refactored_upcoming_events)
   end
 
    it 'does not show events past repeat end' do
      Delorean.time_travel_to(Time.parse('2013-06-17 08:00:01 UTC'))
-    # expect(Event.upcoming_events).to eq Event.refactored_upcoming_events
+    expect(Event.upcoming_events).to eq Event.refactored_upcoming_events
    end
  end
 
@@ -468,6 +466,14 @@ describe 'returns one time events' do
   # incorrect time scheduled
   # incorrect day scheduled
   # issues with time zones
+  # multiple days per week
+  #starts one day and repeats on a different day
+  
+#current behavior: if repeating event is created, original start date is not used
+  #also seems to go further in the future than expected.  if there is an end date, 
+  # it goes on until that end date even if a year in the future.  if there is not end date, it goes 10 days in the future, but seems to exclude the 
+  #last date.  example if repeating on saturday and sunday, it doesn't show sunday
+  
 end
 
   end
